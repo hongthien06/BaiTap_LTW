@@ -1,0 +1,72 @@
+name: nhagiakim
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: ngk-sqlserver
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?Thieu MSSQL_SA_PASSWORD - copy .env.example thanh .env}
+      MSSQL_PID: Developer
+    ports:
+      - "${SQLSERVER_PORT:-1433}:1433"
+    volumes:
+      - mssql-data:/var/opt/mssql
+    healthcheck:
+      # API chi duoc khoi dong khi SQL Server THAT SU tra loi query, khong phai chi mo cong.
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -Q 'SELECT 1' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 30s
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: ngk-api
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__Default: "Server=sqlserver,1433;Database=NhaGiaKim;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;MultipleActiveResultSets=true"
+      # Trong container thi tu migrate + seed la dung: database bat dau tu rong.
+      Database__MigrateOnStartup: "true"
+      Jwt__Key: ${JWT_KEY:?Thieu JWT_KEY - toi thieu 32 ky tu}
+      Jwt__Issuer: NhaGiaKim.Api
+      Jwt__Audience: NhaGiaKim.Client
+      Jwt__ExpiryMinutes: "60"
+      Seed__AdminPassword: ${SEED_ADMIN_PASSWORD:?Thieu SEED_ADMIN_PASSWORD}
+      # Bat Swagger de cham bai / demo. Trien khai that thi dat false.
+      Swagger__Enabled: ${SWAGGER_ENABLED:-true}
+      # Web va API dung chung origin qua nginx nen khong can CORS, van khai bao cho truong hop goi truc tiep.
+      Cors__AllowedOrigins__0: ${WEB_ORIGIN:-http://localhost:8080}
+    ports:
+      - "${API_PORT:-5080}:8080"
+    volumes:
+      - uploads:/app/wwwroot/uploads
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: ngk-web
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "${WEB_PORT:-8080}:80"
+    restart: unless-stopped
+
+volumes:
+  mssql-data:
+  uploads:

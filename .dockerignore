@@ -1,0 +1,30 @@
+# Build output
+**/bin/
+**/obj/
+**/node_modules/
+**/dist/
+**/.vs/
+**/TestResults/
+
+# Khong bao gio dua vao image
+**/appsettings.Local.json
+**/appsettings.Production.json
+**/.env
+**/.env.*
+!**/.env.example
+**/*.pfx
+**/logs/
+**/*.log
+
+# File tai len cua moi truong dev - khong thuoc ve image
+backend/NhaGiaKim.Api/wwwroot/uploads/*
+!backend/NhaGiaKim.Api/wwwroot/uploads/.gitkeep
+
+# Khong can khi build
+.git/
+docs/
+scripts/
+frontend/e2e/
+frontend/playwright-report/
+frontend/test-results/
+*.pdf

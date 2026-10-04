@@ -4,7 +4,28 @@ Website bán một đầu sách: landing page công khai + trang quản trị.
 
 **Stack:** ASP.NET Core 9 Web API (C#) · SQL Server (LocalDB) + EF Core 9 · ReactJS 19 + Vite + TypeScript + Tailwind + Ant Design
 
-## Chạy dự án
+## Cách 1 — Docker (nhanh nhất, không cần cài gì ngoài Docker)
+
+```bash
+cp .env.example .env     # mở ra đổi mật khẩu
+docker compose up -d --build
+```
+
+| Địa chỉ | Nội dung |
+|---|---|
+| http://localhost:8080 | Landing page |
+| http://localhost:8080/admin/login | Trang quản trị |
+| http://localhost:8080/swagger | Swagger |
+
+Tài khoản admin: `admin@nhagiakim.local` / mật khẩu đặt ở `SEED_ADMIN_PASSWORD` trong `.env`.
+
+Dừng: `docker compose down` (giữ dữ liệu) hoặc `docker compose down -v` (xoá sạch).
+
+Chi tiết kiến trúc, secret, giới hạn: [docs/06-docker.md](docs/06-docker.md).
+
+## Cách 2 — Chạy trực tiếp trên máy (để phát triển)
+
+Cần .NET SDK 9, Node 22 và SQL Server LocalDB.
 
 ### 1. Chuẩn bị secret (chỉ làm một lần)
 
@@ -77,6 +98,7 @@ vì test tích hợp dùng SQLite nên không đại diện được cho SQL Ser
 | [docs/03-plan.md](docs/03-plan.md) | Kiến trúc, cấu trúc thư mục, schema DB, API, 7 giai đoạn, rủi ro | Bước 3 |
 | [docs/04-work-packages.md](docs/04-work-packages.md) | Chia work package, DAG, ownership file, chống xung đột | P1–P2 |
 | [docs/05-review-findings.md](docs/05-review-findings.md) | Findings của reviewer độc lập và cách xử lý từng cái | Bước 7–8 |
+| [docs/06-docker.md](docs/06-docker.md) | Đóng gói Docker: kiến trúc, secret, lệnh hay dùng, giới hạn | Triển khai |
 | [docs/evidence/](docs/evidence/) | Raw output kiểm chứng | Bước 9 |
 | [contracts/README.md](contracts/README.md) | Contract API đã đóng băng (`openapi.json`) | P2 |
 
@@ -97,6 +119,10 @@ frontend/src/
   pages/admin/                login, đơn hàng, đánh giá, sách, cấu hình, tài khoản
 contracts/openapi.json        contract sinh từ Swagger
 scripts/gates.sh              cổng tự động (bước 6)
+scripts/smoke.sh              18 kiểm chứng trên SQL Server thật
+docker-compose.yml            3 container: sqlserver -> api -> web (nginx)
+backend/Dockerfile            build .NET nhiều tầng, chạy bằng user không phải root
+frontend/Dockerfile           build Vite -> nginx phục vụ tĩnh + proxy /api
 ```
 
 ## Nguyên tắc cốt lõi

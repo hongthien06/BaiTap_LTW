@@ -95,6 +95,11 @@ builder.Services.AddRateLimiter(options =>
             }));
 });
 
+// Healthcheck cho Docker: container web va compose cho den khi API that su san sang,
+// khong chi la "cong da mo".
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<AppDbContext>("database");
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -125,7 +130,13 @@ var app = builder.Build();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseSerilogRequestLogging();
 
-if (app.Environment.IsDevelopment())
+// Swagger bat theo CO CAU HINH, khong theo moi truong: container chay o Production nhung
+// van can Swagger de demo bai tap. Mac dinh chi bat o Development, muon bat o noi khac
+// phai khai bao tuong minh Swagger:Enabled = true.
+var swaggerEnabled = app.Configuration.GetValue<bool?>("Swagger:Enabled")
+    ?? app.Environment.IsDevelopment();
+
+if (swaggerEnabled)
 {
     app.UseSwagger();
     app.UseSwaggerUI();
@@ -149,6 +160,7 @@ app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.MapHealthChecks("/health").AllowAnonymous();
 
 // ---- Migrate + seed khi khoi dong (dev) ----
 if (app.Configuration.GetValue<bool>("Database:MigrateOnStartup"))
