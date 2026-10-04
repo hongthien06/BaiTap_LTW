@@ -58,3 +58,6 @@ fi
 
 echo
 echo "=== GATES PASSED ==="
+echo
+echo "Luu y: E2E (Playwright) KHONG nam trong gates vi can ca hai server dang chay."
+echo "Chay rieng: npm --prefix frontend run test:e2e  (xem frontend/e2e/README.md)"

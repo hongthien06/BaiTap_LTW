@@ -205,3 +205,62 @@ export interface ApiProblem {
   errors?: Record<string, string[]>
   traceId?: string
 }
+
+// ---- Admin: noi dung phu (tac gia, bao chi, review) ----
+
+export interface AdminAuthor {
+  id: number
+  fullName: string
+  avatarUrl: string | null
+  bio: string
+}
+
+export type UpdateAuthorRequest = Omit<AdminAuthor, 'id'>
+
+export interface AdminPressQuote {
+  id: number
+  pressName: string
+  logoUrl: string | null
+  quote: string
+  sourceUrl: string | null
+  sortOrder: number
+}
+
+export type PressQuoteRequest = Omit<AdminPressQuote, 'id'>
+
+export interface AdminReview {
+  id: number
+  title: string
+  content: string
+  fileUrl: string | null
+}
+
+export type UpdateReviewRequest = Omit<AdminReview, 'id'>
+
+// ---- Admin: tai khoan ----
+
+export interface CreateUserRequest {
+  email: string
+  password: string
+  fullName: string
+  role: 'Admin' | 'Staff'
+}
+
+export interface UpdateUserRequest {
+  fullName: string
+  role: 'Admin' | 'Staff'
+  isActive: boolean
+  /** De trong neu khong doi mat khau. */
+  newPassword?: string | null
+}
+
+// ---- Upload ----
+
+/** Khop enum UploadKind o backend (binding theo ten). */
+export type UploadKind = 'Image' | 'Pdf'
+
+export interface StoredFile {
+  url: string
+  fileName: string
+  size: number
+}

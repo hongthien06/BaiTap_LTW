@@ -1,8 +1,10 @@
 import { api } from './client'
 import type {
-  AdminBook, AdminFeedback, AdminOrder, AdminUser, CreateFeedbackRequest, CreateFeedbackResponse,
-  CreateOrderRequest, CreateOrderResponse, CurrentUser, LandingResponse, LoginResponse,
-  OrderStatusValue, PagedResult, SettingItem,
+  AdminAuthor, AdminBook, AdminFeedback, AdminOrder, AdminPressQuote, AdminReview, AdminUser,
+  CreateFeedbackRequest, CreateFeedbackResponse, CreateOrderRequest, CreateOrderResponse,
+  CreateUserRequest, CurrentUser, LandingResponse, LoginResponse, OrderStatusValue, PagedResult,
+  PressQuoteRequest, SettingItem, StoredFile, UpdateAuthorRequest, UpdateReviewRequest,
+  UpdateUserRequest, UploadKind,
 } from './types'
 
 export const publicApi = {
@@ -48,7 +50,38 @@ export const adminApi = {
   hideFeedback: (id: number) => api.patch(`/api/admin/feedbacks/${id}/hide`).then((r) => r.data),
   deleteFeedback: (id: number) => api.delete(`/api/admin/feedbacks/${id}`).then((r) => r.data),
 
+  getAuthor: () => api.get<AdminAuthor>('/api/admin/author').then((r) => r.data),
+  upsertAuthor: (payload: UpdateAuthorRequest) =>
+    api.put<AdminAuthor>('/api/admin/author', payload).then((r) => r.data),
+
+  getPressQuotes: () => api.get<AdminPressQuote[]>('/api/admin/press-quotes').then((r) => r.data),
+  createPressQuote: (payload: PressQuoteRequest) =>
+    api.post<AdminPressQuote>('/api/admin/press-quotes', payload).then((r) => r.data),
+  updatePressQuote: (id: number, payload: PressQuoteRequest) =>
+    api.put<AdminPressQuote>(`/api/admin/press-quotes/${id}`, payload).then((r) => r.data),
+  deletePressQuote: (id: number) => api.delete(`/api/admin/press-quotes/${id}`).then((r) => r.data),
+
+  getReview: () => api.get<AdminReview>('/api/admin/review').then((r) => r.data),
+  upsertReview: (payload: UpdateReviewRequest) =>
+    api.put<AdminReview>('/api/admin/review', payload).then((r) => r.data),
+
   getUsers: () => api.get<AdminUser[]>('/api/admin/users').then((r) => r.data),
+  createUser: (payload: CreateUserRequest) =>
+    api.post<AdminUser>('/api/admin/users', payload).then((r) => r.data),
+  updateUser: (id: number, payload: UpdateUserRequest) =>
+    api.put<AdminUser>(`/api/admin/users/${id}`, payload).then((r) => r.data),
+  deleteUser: (id: number) => api.delete(`/api/admin/users/${id}`).then((r) => r.data),
+
+  /** Upload anh hoac PDF. Backend kiem tra magic bytes, khong tin duoi file. */
+  upload: (file: File, kind: UploadKind) => {
+    const form = new FormData()
+    form.append('file', file)
+    return api
+      .post<StoredFile>(`/api/admin/upload?kind=${kind}`, form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+      .then((r) => r.data)
+  },
 
   getSettings: () => api.get<SettingItem[]>('/api/admin/settings').then((r) => r.data),
   updateSettings: (items: SettingItem[]) =>

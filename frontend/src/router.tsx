@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { AdminLayout } from './components/admin/AdminLayout'
 import { ProtectedRoute } from './components/admin/ProtectedRoute'
 import { BookPage } from './pages/admin/BookPage'
+import { ContentPage } from './pages/admin/ContentPage'
 import { FeedbacksPage } from './pages/admin/FeedbacksPage'
 import { LoginPage } from './pages/admin/LoginPage'
 import { OrdersPage } from './pages/admin/OrdersPage'
@@ -24,6 +25,7 @@ export const router = createBrowserRouter([
       { path: 'orders', element: <OrdersPage /> },
       { path: 'feedbacks', element: <FeedbacksPage /> },
       { path: 'book', element: <ProtectedRoute adminOnly><BookPage /></ProtectedRoute> },
+      { path: 'content', element: <ProtectedRoute adminOnly><ContentPage /></ProtectedRoute> },
       { path: 'settings', element: <ProtectedRoute adminOnly><SettingsPage /></ProtectedRoute> },
       { path: 'users', element: <ProtectedRoute adminOnly><UsersPage /></ProtectedRoute> },
     ],

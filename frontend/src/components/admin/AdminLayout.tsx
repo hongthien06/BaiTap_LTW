@@ -16,6 +16,7 @@ export function AdminLayout() {
     ...(isAdmin
       ? [
           { key: '/admin/book', label: <Link to="/admin/book">Thông tin sách</Link> },
+          { key: '/admin/content', label: <Link to="/admin/content">Nội dung landing</Link> },
           { key: '/admin/settings', label: <Link to="/admin/settings">Cấu hình site</Link> },
           { key: '/admin/users', label: <Link to="/admin/users">Tài khoản</Link> },
         ]

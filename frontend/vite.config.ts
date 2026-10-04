@@ -18,5 +18,8 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
     css: false,
+    // e2e/** la test Playwright, chay bang 'npm run test:e2e'. Vitest khong hieu API cua Playwright.
+    include: ['src/**/*.{test,spec}.{ts,tsx}'],
+    exclude: ['node_modules', 'dist', 'e2e'],
   },
 })
