@@ -15,11 +15,11 @@ Ghi chú trên bảng: phần **"hard code"** = Hero / Chi tiết tác giả / B
 
 | Lớp | Công nghệ |
 |---|---|
-| Backend | **ASP.NET Core 8 Web API (C#)**, EF Core 8, FluentValidation, JWT Bearer, Serilog, Swagger |
+| Backend | **ASP.NET Core 9 Web API (C#)**, EF Core 9, FluentValidation, JWT Bearer, Serilog, Swagger |
 | Database | **SQL Server** (dev: LocalDB / Docker `mssql`), migration bằng EF Core Migrations |
 | Frontend | **ReactJS 18 + Vite + TypeScript**, React Router, TanStack Query, Axios, react-hook-form + Zod |
 | UI | TailwindCSS cho landing; Ant Design cho admin |
-| Test | xUnit + FluentAssertions + `WebApplicationFactory` (BE), Vitest + React Testing Library (FE), Playwright (E2E) |
+| Test | xUnit + Shouldly + `WebApplicationFactory` + SQLite in-memory (BE), Vitest + React Testing Library (FE), Playwright (E2E) |
 
 ## 3. Yêu cầu chức năng
 
@@ -133,7 +133,8 @@ Ghi chú trên bảng: phần **"hard code"** = Hero / Chi tiết tác giả / B
 5. Ảnh và file review lưu ở **local `wwwroot/uploads`**, chưa dùng cloud storage.
 6. Chỉ hỗ trợ **tiếng Việt**, chưa đa ngôn ngữ.
 
-> **Human checkpoint (bắt buộc theo bước 1 của quy trình):** xác nhận 6 giả định trên trước khi sang bước 3 (Planning). Giả định (3) ảnh hưởng trực tiếp tới khối lượng công việc.
+> **Human checkpoint:** người dùng đã chọn "tiến hành làm đi" (2026-10-04) → 6 giả định trên được coi là **đã chấp nhận**.
+> Nếu đề bài thực tế yêu cầu cổng thanh toán thật (giả định 3) thì phải quay lại bước 1 và mở thêm một work package riêng.
 
 ## 7. Ngoài phạm vi (out of scope)
 

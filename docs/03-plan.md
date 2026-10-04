@@ -10,14 +10,15 @@ Browser
   │     /          landing public     │
   │     /admin/*   CMS                │
   │                                   ▼
-  │                      ASP.NET Core 8 Web API
+  │                      ASP.NET Core 9 Web API
   │                        Controller → Service → Repository
-  │                                   │ EF Core 8
+  │                                   │ EF Core 9
   │                                   ▼
   └── /uploads/*  (static files)   SQL Server
 ```
 
-- **Phân tầng BE:** `Controller` (HTTP, không chứa business logic) → `Service` (business rule, transaction) → `Repository` (truy vấn EF Core). DTO riêng cho request/response, **không trả entity trực tiếp**.
+- **Phân tầng BE:** `Controller` (HTTP, không chứa business logic) → `Service` (business rule, transaction) → `AppDbContext` qua interface `IAppDbContext`. DTO riêng cho request/response, **không trả entity trực tiếp**.
+- **Không có lớp Repository riêng.** EF Core `DbContext` đã là Unit of Work + Repository; thêm một lớp bọc mỏng chỉ làm tăng code mà không tăng khả năng test (test tích hợp dùng SQLite in-memory, không mock). Service phụ thuộc `IAppDbContext` để tầng Application không tham chiếu Infrastructure.
 - **Auth:** JWT Bearer, policy `RequireAdmin` / `RequireStaffOrAdmin`.
 - **CORS:** chỉ cho phép origin của FE (dev: `http://localhost:5173`).
 - **Error handling:** 1 middleware duy nhất map exception → ProblemDetails + correlation id.
@@ -52,7 +53,8 @@ BaiTapLTW/
 │   │   ├── AppDbContext.cs
 │   │   ├── Configurations/      (IEntityTypeConfiguration)
 │   │   ├── Migrations/          [chỉ Integrator chạy add-migration]
-│   │   ├── Repositories/
+│   │   ├── Security/            (BcryptPasswordHasher, JwtTokenGenerator, JwtOptions)
+│   │   ├── Storage/LocalFileStorage.cs
 │   │   └── Seed/DbSeeder.cs
 │   └── NhaGiaKim.Tests/
 │       ├── Unit/
