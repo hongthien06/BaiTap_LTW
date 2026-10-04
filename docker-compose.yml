@@ -1,3 +1,5 @@
+# Stack chay o MAY CA NHAN. Moi cong deu gan vao 127.0.0.1 nen khong lo ra mang LAN:
+# may khac trong cung wifi khong truy cap duoc. Muon demo cho may khac thi bo "127.0.0.1:".
 name: nhagiakim
 
 services:
@@ -9,7 +11,7 @@ services:
       MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?Thieu MSSQL_SA_PASSWORD - copy .env.example thanh .env}
       MSSQL_PID: Developer
     ports:
-      - "${SQLSERVER_PORT:-1433}:1433"
+      - "127.0.0.1:${SQLSERVER_PORT:-1433}:1433"
     volumes:
       - mssql-data:/var/opt/mssql
     healthcheck:
@@ -19,7 +21,6 @@ services:
       timeout: 5s
       retries: 15
       start_period: 30s
-    restart: unless-stopped
 
   api:
     build:
@@ -41,10 +42,11 @@ services:
       Seed__AdminPassword: ${SEED_ADMIN_PASSWORD:?Thieu SEED_ADMIN_PASSWORD}
       # Bat Swagger de cham bai / demo. Trien khai that thi dat false.
       Swagger__Enabled: ${SWAGGER_ENABLED:-true}
-      # Web va API dung chung origin qua nginx nen khong can CORS, van khai bao cho truong hop goi truc tiep.
-      Cors__AllowedOrigins__0: ${WEB_ORIGIN:-http://localhost:8080}
+      # Frontend va API dung chung origin qua nginx nen khong can CORS,
+      # van khai bao phong truong hop goi API truc tiep o cong 5080.
+      Cors__AllowedOrigins__0: ${FRONTEND_ORIGIN:-http://localhost:8080}
     ports:
-      - "${API_PORT:-5080}:8080"
+      - "127.0.0.1:${API_PORT:-5080}:8080"
     volumes:
       - uploads:/app/wwwroot/uploads
     healthcheck:
@@ -53,19 +55,17 @@ services:
       timeout: 5s
       retries: 10
       start_period: 40s
-    restart: unless-stopped
 
-  web:
+  frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: ngk-web
+    container_name: ngk-frontend
     depends_on:
       api:
         condition: service_healthy
     ports:
-      - "${WEB_PORT:-8080}:80"
-    restart: unless-stopped
+      - "127.0.0.1:${FRONTEND_PORT:-8080}:80"
 
 volumes:
   mssql-data:

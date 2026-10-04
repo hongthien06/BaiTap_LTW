@@ -20,5 +20,7 @@ COPY --from=build /app/dist /usr/share/nginx/html
 
 EXPOSE 80
 
+# Dung 127.0.0.1 chu khong phai localhost: trong alpine, localhost giai ra ::1 truoc,
+# ma nginx "listen 80" chi bind IPv4 -> healthcheck bao connection refused du web van chay.
 HEALTHCHECK --interval=15s --timeout=3s --start-period=5s --retries=5 \
-    CMD wget -qO- http://localhost/ >/dev/null || exit 1
+    CMD wget -qO- http://127.0.0.1/ >/dev/null || exit 1

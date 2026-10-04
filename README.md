@@ -11,6 +11,8 @@ cp .env.example .env     # mở ra đổi mật khẩu
 docker compose up -d --build
 ```
 
+Ba container: `sqlserver` → `api` → `frontend` (nginx phục vụ bản build React + proxy `/api`).
+
 | Địa chỉ | Nội dung |
 |---|---|
 | http://localhost:8080 | Landing page |
@@ -18,6 +20,8 @@ docker compose up -d --build
 | http://localhost:8080/swagger | Swagger |
 
 Tài khoản admin: `admin@nhagiakim.local` / mật khẩu đặt ở `SEED_ADMIN_PASSWORD` trong `.env`.
+
+Mọi cổng chỉ nghe ở `127.0.0.1` — máy khác trong mạng không vào được.
 
 Dừng: `docker compose down` (giữ dữ liệu) hoặc `docker compose down -v` (xoá sạch).
 
@@ -120,7 +124,7 @@ frontend/src/
 contracts/openapi.json        contract sinh từ Swagger
 scripts/gates.sh              cổng tự động (bước 6)
 scripts/smoke.sh              18 kiểm chứng trên SQL Server thật
-docker-compose.yml            3 container: sqlserver -> api -> web (nginx)
+docker-compose.yml            3 container: sqlserver -> api -> frontend (nginx)
 backend/Dockerfile            build .NET nhiều tầng, chạy bằng user không phải root
 frontend/Dockerfile           build Vite -> nginx phục vụ tĩnh + proxy /api
 ```
