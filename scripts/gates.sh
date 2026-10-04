@@ -6,6 +6,12 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
+# API dang chay se khoa file DLL -> build that bai voi loi kho hieu. Bao som.
+if tasklist 2>/dev/null | grep -qi "NhaGiaKim.Api.exe"; then
+  echo "GATE FAIL: NhaGiaKim.Api dang chay va khoa file DLL. Dung server roi chay lai."
+  exit 1
+fi
+
 echo "=== [1/7] dotnet build ==="
 dotnet build BaiTapLTW.sln --nologo -warnaserror
 

@@ -87,15 +87,15 @@ public static class DbSeeder
                           "va kham pha ra y nghia that su cua van menh ca nhan.",
             Price = 89_000m,
             DiscountPrice = 69_000m,
-            CoverImageUrl = "/img/book-cover.jpg",
-            MockupImageUrl = "/img/book-mockup.png",
+            CoverImageUrl = "/img/book-cover.svg",
+            MockupImageUrl = "/img/book-mockup.svg",
             IsActive = true,
             CreatedAt = now,
             UpdatedAt = now,
             Author = new Author
             {
                 FullName = "Paulo Coelho",
-                AvatarUrl = "/img/author.jpg",
+                AvatarUrl = "/img/author.svg",
                 Bio = "Tieu thuyet gia nguoi Brazil, tac gia cua nhieu dau sach duoc dich ra hon 80 ngon ngu."
             },
             ContentReview = new ContentReview
@@ -112,8 +112,8 @@ public static class DbSeeder
             ],
             Images =
             [
-                new BookImage { Url = "/img/book-1.jpg", Caption = "Bia truoc", SortOrder = 1 },
-                new BookImage { Url = "/img/book-2.jpg", Caption = "Bia sau", SortOrder = 2 }
+                new BookImage { Url = "/img/book-1.svg", Caption = "Bia truoc", SortOrder = 1 },
+                new BookImage { Url = "/img/book-2.svg", Caption = "Bia sau", SortOrder = 2 }
             ]
         };
 
