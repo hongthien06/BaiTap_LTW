@@ -1,0 +1,48 @@
+# ---- .NET ----
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+TestResults/
+*.trx
+*.coverage
+*.nupkg
+
+# ---- Secrets (KHONG duoc commit) ----
+appsettings.Development.json
+appsettings.Local.json
+appsettings.Production.json
+*.pfx
+.env
+.env.*
+!.env.example
+
+# ---- Uploads (file nguoi dung tai len) ----
+backend/NhaGiaKim.Api/wwwroot/uploads/*
+!backend/NhaGiaKim.Api/wwwroot/uploads/.gitkeep
+
+# ---- Node / Frontend ----
+node_modules/
+dist/
+dist-ssr/
+.vite/
+coverage/
+playwright-report/
+test-results/
+*.local
+
+# ---- Logs / baseline raw output ----
+logs/
+*.log
+docs/baseline-*.txt
+docs/gate-report*.txt
+
+# ---- IDE / OS ----
+.idea/
+.DS_Store
+Thumbs.db
