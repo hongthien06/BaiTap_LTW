@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { TOKEN_STORAGE_KEY } from '../api/client'
+import { TOKEN_STORAGE_KEY, isOnAdminPage } from '../api/client'
+import { queryClient } from '../lib/queryClient'
 import { authApi } from '../api/endpoints'
 import type { CurrentUser } from '../api/types'
 
@@ -18,9 +19,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
 
   // Khoi dong: neu con token thi hoi lai server xem con hieu luc khong.
+  // Chi kiem tra khi dang o khu admin - khach xem landing khong can biet phien admin con hay het,
+  // va goi me() o day se tao mot 401 vo ich ngay tren trang ban hang.
   useEffect(() => {
     const token = localStorage.getItem(TOKEN_STORAGE_KEY)
-    if (!token) {
+    if (!token || !isOnAdminPage()) {
       setIsLoading(false)
       return
     }
@@ -42,6 +45,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(() => {
     localStorage.removeItem(TOKEN_STORAGE_KEY)
+    // Xoa cache: khong thi du lieu cua nguoi vua dang xuat con duoc phuc vu
+    // cho nguoi dang nhap tiep theo trong cung tab (staleTime 30s).
+    queryClient.clear()
     setUser(null)
   }, [])
 

@@ -66,36 +66,43 @@ public class AdminUserService(IAppDbContext db, IPasswordHasher hasher, TimeProv
 
     public async Task<ServiceResult<AdminUserDto>> UpdateAsync(int id, UpdateUserRequest req, CancellationToken ct = default)
     {
-        var user = await db.AppUsers.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == id, ct);
-        if (user is null)
-            return ServiceResult<AdminUserDto>.Fail(ServiceErrorCode.NotFound, "Khong tim thay tai khoan.");
-
         if (!ValidRoles.Contains(req.Role))
             return ServiceResult<AdminUserDto>.Invalid(nameof(req.Role), "Role khong hop le.");
 
-        // Khong de he thong mat sach tai khoan Admin dang hoat dong.
-        var adminRoleId = await db.Roles.Where(r => r.Name == RoleName.Admin).Select(r => r.Id).FirstAsync(ct);
-        var isLastActiveAdmin = user.RoleId == adminRoleId && user.IsActive
-            && !await db.AppUsers.AnyAsync(u => u.Id != id && u.RoleId == adminRoleId && u.IsActive, ct);
+        if (!string.IsNullOrEmpty(req.NewPassword) && req.NewPassword.Length < MinPasswordLength)
+            return ServiceResult<AdminUserDto>.Invalid(nameof(req.NewPassword), $"Mat khau toi thieu {MinPasswordLength} ky tu.");
 
-        if (isLastActiveAdmin && (req.Role != RoleName.Admin || !req.IsActive))
-            return ServiceResult<AdminUserDto>.Invalid(nameof(req.Role), "Phai con it nhat mot tai khoan Admin dang hoat dong.");
-
-        if (!string.IsNullOrEmpty(req.NewPassword))
+        // Doc-roi-ghi tren mot bat bien toan cuc: hai request song song cung ha quyen hai Admin
+        // cuoi cung se deu thay "van con Admin khac" neu khong tuan tu hoa.
+        return await db.ExecuteInSerializableTransactionAsync<ServiceResult<AdminUserDto>>(async token =>
         {
-            if (req.NewPassword.Length < MinPasswordLength)
-                return ServiceResult<AdminUserDto>.Invalid(nameof(req.NewPassword), $"Mat khau toi thieu {MinPasswordLength} ky tu.");
-            user.PasswordHash = hasher.Hash(req.NewPassword);
-        }
+            var user = await db.AppUsers.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == id, token);
+            if (user is null)
+            {
+                return (false, ServiceResult<AdminUserDto>.Fail(
+                    ServiceErrorCode.NotFound, "Khong tim thay tai khoan."));
+            }
 
-        var role = await db.Roles.FirstAsync(r => r.Name == req.Role, ct);
-        user.FullName = req.FullName.Trim();
-        user.RoleId = role.Id;
-        user.Role = role;
-        user.IsActive = req.IsActive;
+            if (!string.IsNullOrEmpty(req.NewPassword))
+                user.PasswordHash = hasher.Hash(req.NewPassword);
 
-        await db.SaveChangesAsync(ct);
-        return ServiceResult<AdminUserDto>.Ok(ToDto(user));
+            var role = await db.Roles.FirstAsync(r => r.Name == req.Role, token);
+            user.FullName = req.FullName.Trim();
+            user.RoleId = role.Id;
+            user.Role = role;
+            user.IsActive = req.IsActive;
+
+            await db.SaveChangesAsync(token);
+
+            // Kiem tra SAU khi ghi, trong cung transaction: neu thao tac nay lam he thong het
+            // Admin dang hoat dong thi rollback. Dung cho moi duong (ha quyen, khoa, xoa).
+            if (!await HasActiveAdminAsync(token))
+            {
+                return (false, ServiceResult<AdminUserDto>.Invalid(nameof(req.Role), LastAdminMessage));
+            }
+
+            return (true, ServiceResult<AdminUserDto>.Ok(ToDto(user)));
+        }, ct);
     }
 
     public async Task<ServiceResult<bool>> DeleteAsync(int id, int currentUserId, CancellationToken ct = default)
@@ -103,18 +110,29 @@ public class AdminUserService(IAppDbContext db, IPasswordHasher hasher, TimeProv
         if (id == currentUserId)
             return ServiceResult<bool>.Invalid("id", "Khong the tu xoa tai khoan dang dang nhap.");
 
-        var user = await db.AppUsers.FirstOrDefaultAsync(u => u.Id == id, ct);
-        if (user is null) return ServiceResult<bool>.Fail(ServiceErrorCode.NotFound, "Khong tim thay tai khoan.");
-
-        var adminRoleId = await db.Roles.Where(r => r.Name == RoleName.Admin).Select(r => r.Id).FirstAsync(ct);
-        if (user.RoleId == adminRoleId
-            && !await db.AppUsers.AnyAsync(u => u.Id != id && u.RoleId == adminRoleId && u.IsActive, ct))
+        return await db.ExecuteInSerializableTransactionAsync<ServiceResult<bool>>(async token =>
         {
-            return ServiceResult<bool>.Invalid("id", "Phai con it nhat mot tai khoan Admin dang hoat dong.");
-        }
+            var user = await db.AppUsers.FirstOrDefaultAsync(u => u.Id == id, token);
+            if (user is null)
+            {
+                return (false, ServiceResult<bool>.Fail(ServiceErrorCode.NotFound, "Khong tim thay tai khoan."));
+            }
 
-        db.AppUsers.Remove(user);
-        await db.SaveChangesAsync(ct);
-        return ServiceResult<bool>.Ok(true);
+            db.AppUsers.Remove(user);
+            await db.SaveChangesAsync(token);
+
+            if (!await HasActiveAdminAsync(token))
+            {
+                return (false, ServiceResult<bool>.Invalid("id", LastAdminMessage));
+            }
+
+            return (true, ServiceResult<bool>.Ok(true));
+        }, ct);
     }
+
+    private const string LastAdminMessage = "Phai con it nhat mot tai khoan Admin dang hoat dong.";
+
+    /// <summary>Con it nhat mot tai khoan Admin dang hoat dong khong?</summary>
+    private Task<bool> HasActiveAdminAsync(CancellationToken ct) =>
+        db.AppUsers.AnyAsync(u => u.IsActive && u.Role!.Name == RoleName.Admin, ct);
 }

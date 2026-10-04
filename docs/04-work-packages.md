@@ -31,7 +31,7 @@
 - **Mục tiêu:** 8 section landing + form đặt hàng + form feedback + SEO + responsive.
 - **AC:** AC-2, 3, 4, 5, 6, 12, 16.
 - **Sở hữu file:** `frontend/src/pages/public/**`, `frontend/src/components/landing/**`, `frontend/src/styles/landing.css`
-- **Phụ thuộc:** **contract** (`openapi.yaml`), KHÔNG phụ thuộc code của WP-B. Dev với **MSW mock** theo contract.
+- **Phụ thuộc:** **contract** (`openapi.json`), KHÔNG phụ thuộc code của WP-B. Dev với **MSW mock** theo contract.
 
 ### WP-E — Frontend Admin
 
@@ -54,7 +54,7 @@
 ## 2. Đồ thị phụ thuộc (DAG)
 
 ```
-         contracts/openapi.yaml  (đóng băng ở P2)
+         contracts/openapi.json  (đóng băng ở P2)
                     |
       +-------------+--------------+---------------+
       |             |              |               |
@@ -78,7 +78,7 @@
 
 ## 3. Contract đóng băng (P2)
 
-`contracts/openapi.yaml` phải định nghĩa xong **trước khi** bất kỳ WP nào viết code:
+`contracts/openapi.json` phải định nghĩa xong **trước khi** bất kỳ WP nào viết code:
 
 - Mọi route, method, status code.
 - Schema request/response đầy đủ (bao gồm `ProblemDetails` cho lỗi).
@@ -89,7 +89,7 @@ Sau khi duyệt ở P2 → **đóng băng**. Muốn đổi contract: dừng mọ
 
 FE sinh type bằng:
 ```bash
-npx openapi-typescript contracts/openapi.yaml -o frontend/src/api/schema.d.ts
+npx openapi-typescript contracts/openapi.json -o frontend/src/api/schema.d.ts
 ```
 
 ## 4. Quy tắc chống xung đột

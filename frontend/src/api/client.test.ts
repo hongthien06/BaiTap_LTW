@@ -64,6 +64,26 @@ describe('interceptor 401', () => {
 
     expect(assign).not.toHaveBeenCalled()
   })
+
+  // Loi that: khach tung dang nhap admin, mo landing sau khi token het han,
+  // bi loi ra /admin/login ngay giua trang ban hang.
+  it('KHÔNG kéo khách khỏi landing page khi token admin cũ hết hạn', async () => {
+    window.location.pathname = '/'
+
+    await runResponseErrorInterceptor(axiosErrorWith(401, '/api/auth/me'))
+
+    expect(assign).not.toHaveBeenCalled()
+    // Token hong van phai bi don di.
+    expect(localStorage.getItem(TOKEN_STORAGE_KEY)).toBeNull()
+  })
+
+  it('vẫn chuyển hướng khi đang ở trang admin khác', async () => {
+    window.location.pathname = '/admin/feedbacks'
+
+    await runResponseErrorInterceptor(axiosErrorWith(401, '/api/auth/me'))
+
+    expect(assign).toHaveBeenCalledWith('/admin/login')
+  })
 })
 
 describe('getErrorMessage', () => {

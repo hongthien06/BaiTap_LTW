@@ -57,6 +57,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.Key)),
             ClockSkew = TimeSpan.FromSeconds(30)
         };
+
+        // Chu ky hop le van chua du: tai khoan co the da bi khoa hoac bi ha quyen sau khi phat token.
+        options.Events = new JwtBearerEvents
+        {
+            OnTokenValidated = ActiveUserValidator.ValidateAsync
+        };
     });
 
 builder.Services.AddAuthorizationBuilder()
@@ -125,7 +131,19 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseStaticFiles();
+// File tai len duoc phuc vu tu day. nosniff chan trinh duyet doan lai kieu noi dung
+// (vector XSS voi file PDF polyglot), Content-Disposition buoc tai ve thay vi mo trong trang.
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = ctx =>
+    {
+        ctx.Context.Response.Headers["X-Content-Type-Options"] = "nosniff";
+        if (ctx.Context.Request.Path.StartsWithSegments("/uploads"))
+        {
+            ctx.Context.Response.Headers["Content-Disposition"] = "attachment";
+        }
+    }
+});
 app.UseCors(CorsPolicies.Frontend);
 app.UseRateLimiter();
 app.UseAuthentication();

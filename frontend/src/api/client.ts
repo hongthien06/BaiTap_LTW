@@ -1,4 +1,5 @@
 import axios, { AxiosError } from 'axios'
+import { queryClient } from '../lib/queryClient'
 import type { ApiProblem } from './types'
 
 export const TOKEN_STORAGE_KEY = 'ngk.admin.token'
@@ -16,9 +17,15 @@ api.interceptors.request.use((config) => {
   return config
 })
 
+/** Duong dan hien tai co thuoc khu quan tri khong. */
+export const isOnAdminPage = () => window.location.pathname.startsWith('/admin')
+
 /**
- * AC-21: token het han hoac khong hop le -> xoa token va day ve man dang nhap.
- * Chi ap dung cho duong dan /api/admin va /api/auth/me; API cong khai khong co token.
+ * AC-21: token het han hoac khong hop le -> xoa token, xoa cache va day ve man dang nhap.
+ *
+ * Chi chuyen huong khi NGUOI DUNG DANG O khu admin. Truoc day khong co dieu kien nay:
+ * mot khach tung dang nhap admin roi mo landing page sau 60 phut se bi loi ra /admin/login
+ * ngay giua trang ban hang.
  */
 api.interceptors.response.use(
   (response) => response,
@@ -29,7 +36,9 @@ api.interceptors.response.use(
 
     if (status === 401 && isAdminCall) {
       localStorage.removeItem(TOKEN_STORAGE_KEY)
-      if (!window.location.pathname.startsWith('/admin/login')) {
+      queryClient.clear()
+
+      if (isOnAdminPage() && !window.location.pathname.startsWith('/admin/login')) {
         window.location.assign('/admin/login')
       }
     }

@@ -23,6 +23,7 @@ public static class DependencyInjection
 
         services.Configure<JwtOptions>(config.GetSection(JwtOptions.SectionName));
         services.AddSingleton(TimeProvider.System);
+        services.AddSingleton<IDbExceptionClassifier, RelationalDbExceptionClassifier>();
         services.AddSingleton<IPasswordHasher, BcryptPasswordHasher>();
         services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
 

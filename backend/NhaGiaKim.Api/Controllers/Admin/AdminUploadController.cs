@@ -20,11 +20,14 @@ public class AdminUploadController(IFileStorage storage) : ApiControllerBase
     public async Task<IActionResult> Upload(IFormFile file, [FromQuery] UploadKind kind = UploadKind.Image,
         CancellationToken ct = default)
     {
+        // Nem FileValidationException de middleware dung chung dung ra ProblemDetails co traceId,
+        // thay vi tra ve mot hinh dang JSON thu ba chi rieng endpoint nay moi co.
         if (file is null || file.Length == 0)
-            return BadRequest(new { title = "Chua chon file." });
+            throw new FileValidationException("Chua chon file.");
 
         if (file.Length > FileSignatureValidator.MaxBytes(kind))
-            return BadRequest(new { title = $"File vuot qua gioi han {FileSignatureValidator.MaxBytes(kind) / 1024 / 1024} MB." });
+            throw new FileValidationException(
+                $"File vuot qua gioi han {FileSignatureValidator.MaxBytes(kind) / 1024 / 1024} MB.");
 
         await using var stream = file.OpenReadStream();
         var stored = await storage.SaveAsync(stream, kind, ct);

@@ -14,7 +14,8 @@ TestResults/
 *.nupkg
 
 # ---- Secrets (KHONG duoc commit) ----
-appsettings.Development.json
+# appsettings.Development.json KHONG con bi bo qua: no chi chua cau hinh dev, khong chua secret.
+# Secret nam trong user-secrets (Jwt:Key, Seed:AdminPassword).
 appsettings.Local.json
 appsettings.Production.json
 *.pfx

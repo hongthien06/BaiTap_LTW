@@ -27,11 +27,19 @@ public class AuthService(
     {
         var email = request.Email.Trim().ToLowerInvariant();
 
+        // Khong goi .ToLower() tren cot: lam vay thanh non-sargable, bo qua unique index tren Email.
+        // Moi duong ghi deu luu email dang chu thuong, va collation mac dinh cua SQL Server
+        // von khong phan biet hoa thuong.
         var user = await db.AppUsers
             .Include(u => u.Role)
-            .FirstOrDefaultAsync(u => u.Email.ToLower() == email, ct);
+            .FirstOrDefaultAsync(u => u.Email == email, ct);
 
-        if (user is null || !user.IsActive || !hasher.Verify(request.Password, user.PasswordHash))
+        // Luon chay dung MOT phep BCrypt verify du email co ton tai hay khong,
+        // de thoi gian phan hoi khong tiet lo email nao co that (AC-18).
+        var hashToCheck = user is { IsActive: true } ? user.PasswordHash : hasher.DummyHash;
+        var passwordMatches = hasher.Verify(request.Password, hashToCheck);
+
+        if (user is null || !user.IsActive || !passwordMatches)
         {
             return ServiceResult<LoginResponse>.Fail(ServiceErrorCode.Unauthorized, InvalidCredentials);
         }

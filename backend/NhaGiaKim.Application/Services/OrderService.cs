@@ -12,7 +12,7 @@ public interface IOrderService
     Task<ServiceResult<CreateOrderResponse>> CreateAsync(CreateOrderRequest request, CancellationToken ct = default);
 }
 
-public class OrderService(IAppDbContext db, TimeProvider clock) : IOrderService
+public class OrderService(IAppDbContext db, TimeProvider clock, IDbExceptionClassifier dbErrors) : IOrderService
 {
     private const int MaxCodeAttempts = 3;
 
@@ -61,13 +61,19 @@ public class OrderService(IAppDbContext db, TimeProvider clock) : IOrderService
                 return ServiceResult<CreateOrderResponse>.Ok(
                     new CreateOrderResponse(order.OrderCode, unitPrice, total));
             }
-            catch (DbUpdateException) when (attempt < MaxCodeAttempts)
+            catch (DbUpdateException ex) when (dbErrors.IsUniqueConstraintViolation(ex))
             {
-                // Unique index tren OrderCode da chan trung; sinh ma moi roi thu lai.
-                db.Orders.Remove(order);
+                // Chi retry khi dung la trung ma don (unique index da chan).
+                // Moi loi ghi khac - timeout, mat ket noi, vi pham khoa ngoai - phai noi len
+                // thanh 500 chu khong duoc nuot roi ghi lai them hai lan nua.
+                //
+                // Detach chu khong Remove: entity dang o trang thai Added, muc dich la go no
+                // khoi change tracker, khong phai xoa mot ban ghi da ton tai.
+                db.Entry(order).State = EntityState.Detached;
             }
         }
 
+        // Het so lan thu ma van trung -> bao 409 de client thu lai, khong de exception thanh 500.
         return ServiceResult<CreateOrderResponse>.Fail(
             ServiceErrorCode.Conflict, "Khong sinh duoc ma don, vui long thu lai.");
     }

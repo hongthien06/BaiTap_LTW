@@ -52,6 +52,17 @@ git diff origin/main...HEAD -- '**/*Tests*' '**/*.test.*'  # soi test bị xoá/
 
 Fail → quay lại bước 5. Fail 3 vòng → escalate.
 
+### Hai lớp kiểm chứng KHÔNG nằm trong gates (vì cần server đang chạy)
+
+```bash
+bash scripts/smoke.sh                  # 18 kiem chung tren API that + SQL Server that
+npm --prefix frontend run test:e2e     # 12 test Playwright tren trinh duyet that
+```
+
+**Bắt buộc chạy `smoke.sh` trước khi tuyên bố Done.** Test tích hợp chạy SQLite in-memory cho
+nhanh, nên mọi khác biệt giữa SQLite và SQL Server đều lọt lưới — đã từng lọt một lỗi 500 thật
+(xem `docs/05-review-findings.md`, mục cuối).
+
 ## 5. Definition of Done của đồ án
 
 Task chỉ Done khi có **đủ bằng chứng**:
@@ -63,12 +74,15 @@ Task chỉ Done khi có **đủ bằng chứng**:
 - [ ] Runtime đúng yêu cầu: có screenshot hoặc log request/response thật (không phải mô tả bằng lời).
 - [ ] `git diff` chỉ chứa file nằm trong plan, hoặc có giải trình.
 - [ ] Phần high-risk (auth, order, migration): có người duyệt + rollback plan đã kiểm tra.
+- [ ] `scripts/smoke.sh` pass trên SQL Server thật (không chỉ SQLite của test tích hợp).
+- [ ] Đã chạy bước 7 (Code Review) và bước 8 (Challenge) bởi người/agent **khác** người viết code,
+      và mọi finding blocker/major đã xử lý hoặc có lý do ghi lại.
 
 ## 6. Chạy song song (phần 7 của PDF)
 
 Đồ án này **đủ lớn để song song** vì chia được theo ranh giới file rõ ràng (backend / frontend public / frontend admin / tests).
 
 - Quyết định WP + ownership file: xem `docs/04-work-packages.md`.
-- Contract đóng băng: `contracts/openapi.yaml` — sau khi duyệt ở P2, **muốn đổi phải quay lại P1**.
+- Contract đóng băng: `contracts/openapi.json` — sau khi duyệt ở P2, **muốn đổi phải quay lại P1**.
 - Quy tắc chống xung đột: mỗi file thuộc đúng **một** WP; file dùng chung (`.sln`, `Program.cs`, `router.tsx`, migration) chỉ **Integrator** được sửa.
 - Tối đa 3 agent chạy đồng thời; WP dư xếp hàng đợi.

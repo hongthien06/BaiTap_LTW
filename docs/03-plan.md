@@ -28,7 +28,7 @@ Browser
 ```
 BaiTapLTW/
 ├── BaiTapLTW.sln                      [Integrator sở hữu]
-├── contracts/openapi.yaml             [đóng băng sau P2]
+├── contracts/openapi.json             [đóng băng sau P2]
 ├── docs/                              [tài liệu quy trình]
 ├── backend/
 │   ├── NhaGiaKim.Api/
@@ -95,7 +95,7 @@ BaiTapLTW/
 **Index:** `Orders.OrderCode` (unique), `Orders.Phone`, `Orders.Status`, `Orders.CreatedAt`, `Feedbacks.IsApproved`.
 **Quy ước:** tiền dùng `decimal(18,2)` — **không bao giờ dùng `float/double`**. Thời gian lưu UTC.
 
-## 4. Thiết kế API (sẽ đóng băng vào `contracts/openapi.yaml`)
+## 4. Thiết kế API (sẽ đóng băng vào `contracts/openapi.json`)
 
 ### Public (không cần token)
 
@@ -162,7 +162,7 @@ Mỗi giai đoạn chạy **trọn vẹn bước 1→10**, không gộp.
 | XSS từ feedback | React escape mặc định; **cấm** `dangerouslySetInnerHTML` cho nội dung người dùng (AC-16) |
 | CORS mở toang | Whitelist origin theo environment, không dùng `AllowAnyOrigin` kèm credentials |
 | Secret trong `appsettings.json` | JWT key và connection string lấy từ User Secrets (dev) / env var (prod); `appsettings.*.json` chứa secret phải vào `.gitignore` |
-| FE và BE lệch kiểu dữ liệu | Sinh type TS từ `openapi.yaml` bằng `openapi-typescript`, không gõ tay interface |
+| FE và BE lệch kiểu dữ liệu | Sinh type TS từ `openapi.json` bằng `openapi-typescript`, không gõ tay interface |
 
 ## 7. Rollback plan
 
@@ -172,4 +172,4 @@ Mỗi giai đoạn chạy **trọn vẹn bước 1→10**, không gộp.
 
 ## 8. File dùng chung (chỉ Integrator được sửa)
 
-`BaiTapLTW.sln` · `Program.cs` · `appsettings*.json` · `AppDbContext.cs` · `Migrations/**` · `frontend/src/router.tsx` · `frontend/src/main.tsx` · `frontend/package.json` · `contracts/openapi.yaml` · `scripts/gates.sh` · `.github/workflows/**`
+`BaiTapLTW.sln` · `Program.cs` · `appsettings*.json` · `AppDbContext.cs` · `Migrations/**` · `frontend/src/router.tsx` · `frontend/src/main.tsx` · `frontend/package.json` · `contracts/openapi.json` · `scripts/gates.sh` · `.github/workflows/**`

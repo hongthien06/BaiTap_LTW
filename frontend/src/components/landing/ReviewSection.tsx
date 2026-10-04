@@ -1,4 +1,5 @@
 import type { ContentReview } from '../../api/types'
+import { safeHref } from '../../lib/url'
 
 export function ReviewSection({ review }: { review: ContentReview }) {
   return (
@@ -7,9 +8,9 @@ export function ReviewSection({ review }: { review: ContentReview }) {
         <h2 id="review-title" className="font-display text-3xl">{review.title}</h2>
         <p className="mt-6 whitespace-pre-line text-lg leading-relaxed text-ink/80">{review.content}</p>
 
-        {review.fileUrl && (
+        {safeHref(review.fileUrl) && (
           <a
-            href={review.fileUrl}
+            href={safeHref(review.fileUrl)}
             download
             className="mt-8 inline-block rounded-full border-2 border-gold px-6 py-2 font-semibold text-gold-dark transition hover:bg-gold hover:text-ink"
             data-testid="review-download"

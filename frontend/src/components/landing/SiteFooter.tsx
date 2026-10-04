@@ -1,3 +1,5 @@
+import { safeHref } from '../../lib/url'
+
 interface Props {
   settings: Record<string, string>
 }
@@ -23,11 +25,11 @@ export function SiteFooter({ settings }: Props) {
         <div>
           <h2 className="font-display text-xl text-sand">Theo dõi</h2>
           <ul className="mt-3 space-y-1">
-            {facebook && (
-              <li><a href={facebook} target="_blank" rel="noopener noreferrer" className="underline">Facebook</a></li>
+            {safeHref(facebook) && (
+              <li><a href={safeHref(facebook)} target="_blank" rel="noopener noreferrer" className="underline">Facebook</a></li>
             )}
-            {youtube && (
-              <li><a href={youtube} target="_blank" rel="noopener noreferrer" className="underline">YouTube</a></li>
+            {safeHref(youtube) && (
+              <li><a href={safeHref(youtube)} target="_blank" rel="noopener noreferrer" className="underline">YouTube</a></li>
             )}
           </ul>
         </div>

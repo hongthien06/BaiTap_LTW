@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using NhaGiaKim.Application.Abstractions;
+using NhaGiaKim.Application.Common;
 using NhaGiaKim.Application.Dtos.Admin;
 using NhaGiaKim.Domain.Entities;
 
@@ -23,8 +24,19 @@ public interface IAdminContentService
 
 public class AdminContentService(IAppDbContext db, TimeProvider clock) : IAdminContentService
 {
+    /// <summary>
+    /// Chi nhung key nay duoc phep ton tai. Khong whitelist thi admin co the tao key bat ky
+    /// (mat khau SMTP, API key...) va LandingService se do het ra endpoint cong khai.
+    /// </summary>
+    private static readonly string[] AllowedSettingKeys = PublicSettingKeys.All;
+
+    /// <summary>
+    /// Phai loc IsActive giong het LandingService va OrderService. Neu khong, khi co nhieu hon
+    /// mot ban ghi Book, admin se sua quyen dau tien trong bang con landing lai doc quyen active
+    /// dau tien - sua xong khong thay gi doi (AC-23 am tham fail).
+    /// </summary>
     private Task<Book?> ActiveBookAsync(CancellationToken ct) =>
-        db.Books.OrderBy(b => b.Id).FirstOrDefaultAsync(ct);
+        db.Books.Where(b => b.IsActive).OrderBy(b => b.Id).FirstOrDefaultAsync(ct);
 
     private static AdminBookDto ToDto(Book b) => new(
         b.Id, b.Name, b.Category, b.Title, b.Subtitle, b.Description,
@@ -47,6 +59,11 @@ public class AdminContentService(IAppDbContext db, TimeProvider clock) : IAdminC
             return ServiceResult<AdminBookDto>.Invalid(nameof(req.Price), "Gia phai lon hon 0.");
         if (req.DiscountPrice.HasValue && (req.DiscountPrice.Value <= 0 || req.DiscountPrice.Value >= req.Price))
             return ServiceResult<AdminBookDto>.Invalid(nameof(req.DiscountPrice), "Gia giam phai lon hon 0 va nho hon gia goc.");
+
+        // Tat quyen sach cuoi cung se lam GET /api/public/landing tra 404 va landing page chet.
+        // Chan truoc thay vi de admin sap site bang mot cu gat.
+        if (!req.IsActive && !await db.Books.AnyAsync(b => b.Id != book.Id && b.IsActive, ct))
+            return ServiceResult<AdminBookDto>.Invalid(nameof(req.IsActive), "Phai con it nhat mot sach dang mo ban.");
 
         book.Name = req.Name.Trim();
         book.Category = req.Category.Trim();
@@ -187,6 +204,17 @@ public class AdminContentService(IAppDbContext db, TimeProvider clock) : IAdminC
 
     public async Task<ServiceResult<IReadOnlyList<SettingItemDto>>> UpdateSettingsAsync(UpdateSettingsRequest req, CancellationToken ct = default)
     {
+        var unknownKeys = req.Items
+            .Select(i => i.Key.Trim())
+            .Where(k => !AllowedSettingKeys.Contains(k))
+            .ToList();
+
+        if (unknownKeys.Count > 0)
+        {
+            return ServiceResult<IReadOnlyList<SettingItemDto>>.Invalid(
+                "key", $"Key khong duoc phep: {string.Join(", ", unknownKeys)}");
+        }
+
         foreach (var item in req.Items)
         {
             var key = item.Key.Trim();

@@ -2,7 +2,7 @@
 
 Website bán một đầu sách: landing page công khai + trang quản trị.
 
-**Stack:** ASP.NET Core 9 Web API (C#) · SQL Server (LocalDB) + EF Core 9 · ReactJS 18 + Vite + TypeScript + Tailwind + Ant Design
+**Stack:** ASP.NET Core 9 Web API (C#) · SQL Server (LocalDB) + EF Core 9 · ReactJS 19 + Vite + TypeScript + Tailwind + Ant Design
 
 ## Chạy dự án
 
@@ -51,11 +51,21 @@ Vite proxy `/api` và `/uploads` sang `http://localhost:5080` nên khi dev khôn
 ## Kiểm thử
 
 ```bash
-bash scripts/gates.sh            # chạy toàn bộ cổng tự động (build, format, test, lint, typecheck, build FE)
+# Cong tu dong - KHONG can server chay (phai tat API truoc vi no khoa file DLL)
+bash scripts/gates.sh                 # build, format, 107 test BE, lint, typecheck, 25 test FE, build FE
 
-dotnet test BaiTapLTW.sln        # 92 test backend
-npm --prefix frontend run test:run   # 18 test frontend
+# Can ca hai server dang chay
+bash scripts/smoke.sh                 # 18 kiem chung tren SQL Server that
+npm --prefix frontend run test:e2e    # 12 test Playwright
+
+# Chay le
+dotnet test BaiTapLTW.sln             # 107 test backend
+npm --prefix frontend run test:run    # 25 test frontend
 ```
+
+Tổng **144 kiểm chứng tự động**: 107 backend (unit + tích hợp) · 25 frontend · 12 E2E.
+`scripts/smoke.sh` chạy thêm 18 kiểm chứng trên SQL Server thật — **bắt buộc** trước khi nộp,
+vì test tích hợp dùng SQLite nên không đại diện được cho SQL Server.
 
 ## Tài liệu
 
@@ -66,6 +76,7 @@ npm --prefix frontend run test:run   # 18 test frontend
 | [docs/02-test-design.md](docs/02-test-design.md) | Test case + bảng truy vết AC → test → bằng chứng | Bước 2 |
 | [docs/03-plan.md](docs/03-plan.md) | Kiến trúc, cấu trúc thư mục, schema DB, API, 7 giai đoạn, rủi ro | Bước 3 |
 | [docs/04-work-packages.md](docs/04-work-packages.md) | Chia work package, DAG, ownership file, chống xung đột | P1–P2 |
+| [docs/05-review-findings.md](docs/05-review-findings.md) | Findings của reviewer độc lập và cách xử lý từng cái | Bước 7–8 |
 | [docs/evidence/](docs/evidence/) | Raw output kiểm chứng | Bước 9 |
 | [contracts/README.md](contracts/README.md) | Contract API đã đóng băng (`openapi.json`) | P2 |
 
@@ -92,10 +103,17 @@ scripts/gates.sh              cổng tự động (bước 6)
 
 > Không tin báo cáo "đã xong". Chỉ tin bằng chứng kiểm chứng độc lập được.
 
+## Dọn dữ liệu test trước khi nộp
+
+Smoke test và E2E tạo đơn hàng, đánh giá, tài khoản thật trong DB:
+
+```bash
+sqlcmd -S "(localdb)\MSSQLLocalDB" -d NhaGiaKim -i scripts/clean-test-data.sql
+```
+
 ## Việc còn lại
 
-- [ ] E2E Playwright cho AC-6 (responsive 360px) và AC-12 (màn hình cảm ơn sau khi đặt hàng)
-- [ ] Trang admin cho tác giả / báo chí / review (API đã có, UI chưa làm)
-- [ ] Form tạo & sửa tài khoản trong trang Tài khoản (API đã có, UI mới ở mức xem danh sách)
 - [ ] Code-splitting cho bundle frontend (hiện 1.28 MB, gzip 409 KB)
-- [ ] Ảnh thật cho sách/tác giả/báo chí (hiện là đường dẫn placeholder)
+- [ ] Ảnh thật cho sách / tác giả / báo chí (hiện là SVG placeholder)
+- [ ] Rate limit sau reverse proxy và token trong localStorage — xem phần
+      "Minor chưa sửa, có lý do" ở [docs/05-review-findings.md](docs/05-review-findings.md)

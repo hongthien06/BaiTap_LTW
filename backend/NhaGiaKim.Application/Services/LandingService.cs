@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using NhaGiaKim.Application.Abstractions;
+using NhaGiaKim.Application.Common;
 using NhaGiaKim.Application.Dtos.Public;
 
 namespace NhaGiaKim.Application.Services;
@@ -45,7 +46,10 @@ public class LandingService(IAppDbContext db) : ILandingService
             .Select(f => new FeedbackDto(f.Id, f.CustomerName, f.Rating, f.Content, f.CreatedAt))
             .ToListAsync(ct);
 
+        // Chi tra ve key nam trong whitelist. Do ca bang ra endpoint cong khai nghia la
+        // bat ky key nao admin them vao sau nay cung tu dong lo cho khach an danh.
         var settings = await db.SiteSettings.AsNoTracking()
+            .Where(s => PublicSettingKeys.All.Contains(s.Key))
             .ToDictionaryAsync(s => s.Key, s => s.Value, ct);
 
         var dto = new LandingResponse(

@@ -6,6 +6,12 @@ public class BcryptPasswordHasher : IPasswordHasher
 {
     private const int WorkFactor = 12;
 
+    // Tinh mot lan cho ca tien trinh: moi lan verify deu ton dung mot phep BCrypt.
+    private static readonly string DummyPasswordHash =
+        BCrypt.Net.BCrypt.HashPassword(Guid.NewGuid().ToString("N"), WorkFactor);
+
+    public string DummyHash => DummyPasswordHash;
+
     public string Hash(string password) => BCrypt.Net.BCrypt.HashPassword(password, WorkFactor);
 
     public bool Verify(string password, string hash)

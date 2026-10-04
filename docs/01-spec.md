@@ -17,7 +17,7 @@ Ghi chú trên bảng: phần **"hard code"** = Hero / Chi tiết tác giả / B
 |---|---|
 | Backend | **ASP.NET Core 9 Web API (C#)**, EF Core 9, FluentValidation, JWT Bearer, Serilog, Swagger |
 | Database | **SQL Server** (dev: LocalDB / Docker `mssql`), migration bằng EF Core Migrations |
-| Frontend | **ReactJS 18 + Vite + TypeScript**, React Router, TanStack Query, Axios, react-hook-form + Zod |
+| Frontend | **ReactJS 19 + Vite + TypeScript**, React Router 7, TanStack Query, Axios, react-hook-form + Zod |
 | UI | TailwindCSS cho landing; Ant Design cho admin |
 | Test | xUnit + Shouldly + `WebApplicationFactory` + SQLite in-memory (BE), Vitest + React Testing Library (FE), Playwright (E2E) |
 

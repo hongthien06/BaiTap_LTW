@@ -1,4 +1,5 @@
 import type { PressQuote } from '../../api/types'
+import { safeHref } from '../../lib/url'
 
 export function PressSection({ quotes }: { quotes: PressQuote[] }) {
   if (quotes.length === 0) return null
@@ -18,9 +19,9 @@ export function PressSection({ quotes }: { quotes: PressQuote[] }) {
 
             <blockquote className="mt-4 italic text-ink/80">“{quote.quote}”</blockquote>
 
-            {quote.sourceUrl && (
+            {safeHref(quote.sourceUrl) && (
               <a
-                href={quote.sourceUrl}
+                href={safeHref(quote.sourceUrl)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="mt-4 inline-block text-sm font-medium text-gold-dark underline"

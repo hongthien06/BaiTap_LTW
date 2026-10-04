@@ -2,6 +2,8 @@ import { useQuery } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { getErrorMessage } from '../../api/client'
 import { publicApi } from '../../api/endpoints'
+import type { LandingResponse } from '../../api/types'
+import { effectivePrice } from '../../lib/format'
 import { AuthorSection } from '../../components/landing/AuthorSection'
 import { BookInfoSection } from '../../components/landing/BookInfoSection'
 import { FeedbackSection } from '../../components/landing/FeedbackSection'
@@ -19,11 +21,14 @@ export function LandingPage() {
 
   useEffect(() => {
     if (!data) return
-    document.title = `${data.book.name} - ${data.book.subtitle}`
-    setMeta('description', data.book.subtitle)
+
+    document.title = truncate(`${data.book.name} - ${data.book.subtitle}`, 60)
+    setMeta('description', truncate(data.book.subtitle, 160))
     setMeta('og:title', data.book.title, 'property')
-    setMeta('og:description', data.book.subtitle, 'property')
+    setMeta('og:description', truncate(data.book.subtitle, 200), 'property')
     if (data.book.coverImageUrl) setMeta('og:image', data.book.coverImageUrl, 'property')
+
+    setStructuredData(data)
   }, [data])
 
   if (isPending) {
@@ -52,6 +57,51 @@ export function LandingPage() {
       <SiteFooter settings={data.settings} />
     </>
   )
+}
+
+/** Title dai qua 60 ky tu bi Google cat; subtitle cua sach co the toi 500 ky tu. */
+function truncate(text: string, max: number) {
+  return text.length <= max ? text : `${text.slice(0, max - 1).trimEnd()}…`
+}
+
+/** NFR-7: JSON-LD schema.org Book + AggregateRating de ket qua tim kiem hien sao va gia. */
+function setStructuredData(data: LandingResponse) {
+  const jsonLd: Record<string, unknown> = {
+    '@context': 'https://schema.org',
+    '@type': 'Book',
+    name: data.book.name,
+    description: data.book.description,
+    genre: data.book.category,
+    image: data.book.coverImageUrl ?? undefined,
+    author: data.author ? { '@type': 'Person', name: data.author.fullName } : undefined,
+    offers: {
+      '@type': 'Offer',
+      price: effectivePrice(data.book.price, data.book.discountPrice),
+      priceCurrency: 'VND',
+      availability: 'https://schema.org/InStock',
+    },
+  }
+
+  // Google tu choi AggregateRating khong co danh gia nao - chi chen khi thuc su co du lieu.
+  if (data.ratingSummary.count > 0) {
+    jsonLd.aggregateRating = {
+      '@type': 'AggregateRating',
+      ratingValue: data.ratingSummary.average,
+      reviewCount: data.ratingSummary.count,
+      bestRating: 5,
+      worstRating: 1,
+    }
+  }
+
+  const id = 'landing-structured-data'
+  let script = document.getElementById(id) as HTMLScriptElement | null
+  if (!script) {
+    script = document.createElement('script')
+    script.id = id
+    script.type = 'application/ld+json'
+    document.head.appendChild(script)
+  }
+  script.textContent = JSON.stringify(jsonLd)
 }
 
 function setMeta(name: string, content: string, attribute: 'name' | 'property' = 'name') {
