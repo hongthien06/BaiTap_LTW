@@ -1,5 +1,44 @@
 # 07 — Kịch bản quay video nộp bài
 
+> **Mới học thì đọc phần này là đủ.** Phần chi tiết bên dưới chỉ để tra khi thầy hỏi sâu.
+
+## Bản rút gọn — 10 phút, 6 chặng
+
+| # | Mở cái gì | Nói đúng một ý |
+|---|---|---|
+| 1 | Database, chạy `SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES` | "Em có 10 bảng. Bảng `Orders` lưu đơn. Tiền em để `decimal` chứ không dùng `float` vì float bị sai số." |
+| 2 | Landing, mở **DevTools tab Network**, điền form, bấm **Xác nhận đặt hàng** | "Bấm xong nó gửi `POST /api/orders`. Nhìn body này — **không có giá tiền**, client chỉ nói mua mấy cuốn." |
+| 3 | `OrdersController.cs` dòng 18 | "Request vào controller này. Controller không tính toán gì, nó gọi service." |
+| 4 | `OrderService.cs` dòng 34–35 và 60 | "Service đọc giá **từ database** rồi nhân số lượng. Xong gọi `SaveChangesAsync`, EF Core sinh câu `INSERT`." |
+| 5 | Database, `SELECT TOP 1 * FROM Orders ORDER BY Id DESC` | "Đây là đơn vừa đặt. 69.000 × 3 = 207.000, đúng cái server tính." |
+| 6 | Admin: đăng nhập → vào trang đơn hàng | "Đăng nhập trả về JWT, trong token có `role`. Mọi request sau đều kèm token này." |
+
+**Một câu chốt cuối:**
+> "Điểm chính của bài là server không tin dữ liệu client gửi. Giá do server tính, định dạng do
+> server kiểm, quyền do server chặn. Giao diện chỉ là lớp hiển thị."
+
+## Chứng minh nhanh (nên làm, 30 giây)
+
+Dán lệnh này vào terminal, cố tình gửi giá bịa `totalPrice: 1`:
+
+```bash
+curl -X POST http://localhost:8080/api/orders -H "Content-Type: application/json" -d "{\"customerName\":\"Thu Gian Lan\",\"phone\":\"0905000111\",\"address\":\"1 Duong Test, Quan 1, TPHCM\",\"quantity\":3,\"paymentMethod\":0,\"totalPrice\":1}"
+```
+
+Kết quả vẫn ra **207000**. Nói: *"Em gửi giá 1 đồng mà server bỏ qua, nó tự tính lại."*
+
+## Chuẩn bị
+
+```bash
+docker compose up -d
+```
+Mở sẵn: Chrome (DevTools Network) · VS Code · cửa sổ database.
+
+---
+---
+
+# Phần chi tiết
+
 Thầy chấm **luồng dữ liệu và hiểu biết kỹ thuật**, không chấm giao diện. Mỗi phần dưới đây
 ghi rõ: *mở file nào, dòng nào, nói gì, chiếu bằng chứng gì*.
 
