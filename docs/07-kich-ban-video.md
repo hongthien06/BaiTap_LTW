@@ -27,6 +27,48 @@ curl -X POST http://localhost:8080/api/orders -H "Content-Type: application/json
 
 Kết quả vẫn ra **207000**. Nói: *"Em gửi giá 1 đồng mà server bỏ qua, nó tự tính lại."*
 
+## Thầy hỏi "sao đề 5 bảng mà em làm 10 bảng?"
+
+Đây là câu dễ bị hỏi nhất. Trả lời đúng là **ăn điểm**, vì nó chứng tỏ hiểu chuẩn hoá.
+
+**Nói:**
+> "Dạ trên bảng thầy vẽ 5 **nhóm chức năng**, em tách thành 10 bảng theo chuẩn 1NF ạ.
+> Cụ thể nhóm *Thông tin Sách* có mục *Ảnh sách* và *Báo chí* — một cuốn sách có **nhiều** ảnh
+> và **nhiều** trích dẫn báo chí. Nếu để chung một bảng thì em phải nhét danh sách vào một cột,
+> kiểu `'Tuổi Trẻ|Thanh Niên|VnExpress'`. Như vậy vi phạm 1NF: muốn sửa một trích dẫn thì phải
+> cắt chuỗi, muốn đếm xem có mấy bài báo cũng không query được."
+
+Rồi chiếu bảng đối chiếu này:
+
+| Nhóm trên bảng thầy | Bảng trong database | Quan hệ |
+|---|---|---|
+| **Thông tin Sách** | `Books` | bảng chính |
+| → Ảnh sách | `BookImages` | **1-N** — bắt buộc tách |
+| → Báo chí | `PressQuotes` | **1-N** — bắt buộc tách |
+| → Thông tin tác giả | `Authors` | 1-1 |
+| → File review | `ContentReviews` | 1-1 |
+| **Đơn đặt hàng** | `Orders` | |
+| **Tài khoản / Role** | `AppUsers` + `Roles` | Role là bảng tra cứu |
+| **Feedback** | `Feedbacks` | |
+| **Setting** | `SiteSettings` | |
+
+**Nếu thầy hỏi tiếp "sao Authors với Roles cũng tách, 1-1 mà?":**
+> "Dạ hai cái đó em tách cho dễ mở rộng ạ. `Roles` làm bảng riêng thì sau này thêm vai trò mới
+> chỉ cần thêm một dòng, không phải sửa code. Còn `Authors` thì nếu sau này một cuốn có nhiều
+> tác giả, em chỉ đổi khoá ngoại chứ không phải dựng lại bảng `Books`. Em biết là gộp vào
+> `Books` cũng chạy được ạ."
+
+Chiếu luôn sơ đồ khoá ngoại cho thầy thấy:
+
+```sql
+SELECT  fk.name AS KhoaNgoai,
+        OBJECT_NAME(fk.parent_object_id)     AS BangCon,
+        OBJECT_NAME(fk.referenced_object_id) AS BangCha
+FROM sys.foreign_keys fk ORDER BY BangCha, BangCon;
+```
+
+---
+
 ## Chuẩn bị
 
 ```bash
