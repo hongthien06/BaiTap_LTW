@@ -180,7 +180,7 @@ SELECT COUNT(*) AS SoDonHienTai FROM Orders;
 
 ## 1.6 — Xem câu SQL thật — 45 giây
 
-*Chuyển sang terminal đang chạy `docker compose logs -f api`.*
+*Chuyển sang cửa sổ terminal đang chạy `dotnet run` — câu SQL in thẳng ở đó.*
 
 > "Em bật log để thầy xem câu SQL mà Entity Framework sinh ra. Đây ạ:"
 

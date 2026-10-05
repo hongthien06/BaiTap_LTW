@@ -22,7 +22,7 @@
 Dán lệnh này vào terminal, cố tình gửi giá bịa `totalPrice: 1`:
 
 ```bash
-curl -X POST http://localhost:8080/api/orders -H "Content-Type: application/json" -d "{\"customerName\":\"Thu Gian Lan\",\"phone\":\"0905000111\",\"address\":\"1 Duong Test, Quan 1, TPHCM\",\"quantity\":3,\"paymentMethod\":0,\"totalPrice\":1}"
+curl -X POST http://localhost:5080/api/orders -H "Content-Type: application/json" -d "{\"customerName\":\"Thu Gian Lan\",\"phone\":\"0905000111\",\"address\":\"1 Duong Test, Quan 1, TPHCM\",\"quantity\":3,\"paymentMethod\":0,\"totalPrice\":1}"
 ```
 
 Kết quả vẫn ra **207000**. Nói: *"Em gửi giá 1 đồng mà server bỏ qua, nó tự tính lại."*
@@ -71,10 +71,13 @@ FROM sys.foreign_keys fk ORDER BY BangCha, BangCon;
 
 ## Chuẩn bị
 
-```bash
-docker compose up -d
+```powershell
+$env:ASPNETCORE_ENVIRONMENT="Development"
+dotnet run --project backend/NhaGiaKim.Api --urls http://localhost:5080 --no-launch-profile
+# cửa sổ khác:
+npm --prefix frontend run dev
 ```
-Mở sẵn: Chrome (DevTools Network) · VS Code · cửa sổ database.
+Mở sẵn: Chrome (DevTools Network) · VS Code · SSMS · terminal đang chạy `dotnet run`.
 
 ---
 ---
@@ -91,28 +94,33 @@ ghi rõ: *mở file nào, dòng nào, nói gì, chiếu bằng chứng gì*.
 
 ## Chuẩn bị trước khi bấm ghi
 
-```bash
+```powershell
 cd D:/Documents/VHT-DT/BaiTapLTW
 
-# 1. Bật log SQL để quay được câu lệnh EF Core sinh ra
-#    (mở .env, sửa dòng SQL_LOG_LEVEL thành Information)
-docker compose up -d --build
+# Terminal 1 - backend. GIU NGUYEN cua so nay, cau SQL se in ra day.
+$env:ASPNETCORE_ENVIRONMENT="Development"
+dotnet run --project backend/NhaGiaKim.Api --urls http://localhost:5080 --no-launch-profile
 
-# 2. Dọn dữ liệu test cho database sạch
-docker compose exec sqlserver /opt/mssql-tools18/bin/sqlcmd \
-  -S localhost -U sa -P "$MSSQL_SA_PASSWORD" -C -d NhaGiaKim \
-  -i /tmp/clean.sql
+# Terminal 2 - frontend
+npm --prefix frontend run dev
+```
+
+Dọn bảng `Orders` cho sạch trước khi quay — chạy trong SSMS:
+
+```sql
+USE NhaGiaKim;
+DELETE FROM Orders;
 ```
 
 Mở sẵn 5 cửa sổ, sắp xếp để chuyển qua lại nhanh:
 
 | # | Cửa sổ | Dùng để |
 |---|---|---|
-| 1 | Chrome — http://localhost:8080 — mở sẵn **DevTools tab Network** | Thao tác và xem request |
+| 1 | Chrome — http://localhost:5173 — mở sẵn **DevTools tab Network** | Thao tác và xem request |
 | 2 | VS Code mở thư mục dự án | Chiếu code |
-| 3 | Terminal chạy `docker compose logs -f api` | Chiếu câu SQL thật |
-| 4 | SSMS hoặc Azure Data Studio nối `localhost,1433` | Chiếu bảng và record |
-| 5 | Chrome tab 2 — http://localhost:8080/swagger | Chiếu hợp đồng API |
+| 3 | Terminal đang chạy `dotnet run` | Chiếu câu SQL thật — EF Core in thẳng ra đây |
+| 4 | SSMS nối `(localdb)\MSSQLLocalDB` bằng Windows Authentication | Chiếu bảng và record |
+| 5 | Chrome tab 2 — http://localhost:5080/swagger | Chiếu hợp đồng API |
 
 **Nói mở đầu (30 giây):**
 > "Em làm website bán một đầu sách, kiến trúc tách đôi: backend là ASP.NET Core Web API,
@@ -151,7 +159,7 @@ SELECT COUNT(*) AS SoDonTruocKhiDat FROM Orders;
 Cửa sổ 1 → điền form đặt hàng → **mở Network trước khi bấm** → bấm "Xác nhận đặt hàng".
 
 Click vào request `orders` trong Network, chiếu:
-- **Headers**: `POST http://localhost:8080/api/orders`, `Content-Type: application/json`
+- **Headers**: `POST http://localhost:5080/api/orders`, `Content-Type: application/json`
 - **Payload**: body JSON gửi lên
 - **Response**: `{"orderCode":"NGK-...","unitPrice":69000,"totalPrice":138000}`, status `201 Created`
 
@@ -224,7 +232,7 @@ Click vào request `orders` trong Network, chiếu:
 
 ### 1.6 Chiếu câu SQL thật
 
-Cửa sổ 3 (`docker compose logs -f api`) — chiếu câu `INSERT` EF Core vừa sinh:
+Cửa sổ 3 (terminal đang chạy `dotnet run`) — chiếu câu `INSERT` EF Core vừa sinh:
 
 ```sql
 INSERT INTO [Orders] ([Address], [BookId], [CreatedAt], [CustomerName], [Note],
@@ -257,7 +265,7 @@ FROM Orders ORDER BY Id DESC;
 Mở Swagger (cửa sổ 5) hoặc dùng terminal, gửi request **cố tình gửi kèm giá bịa**:
 
 ```bash
-curl -X POST http://localhost:8080/api/orders -H "Content-Type: application/json" -d "{\"customerName\":\"Thu Gian Lan\",\"phone\":\"0905000111\",\"address\":\"1 Duong Test, Quan 1, TPHCM\",\"quantity\":2,\"paymentMethod\":0,\"totalPrice\":1,\"unitPrice\":1}"
+curl -X POST http://localhost:5080/api/orders -H "Content-Type: application/json" -d "{\"customerName\":\"Thu Gian Lan\",\"phone\":\"0905000111\",\"address\":\"1 Duong Test, Quan 1, TPHCM\",\"quantity\":2,\"paymentMethod\":0,\"totalPrice\":1,\"unitPrice\":1}"
 ```
 
 **Nói:**
@@ -265,7 +273,7 @@ curl -X POST http://localhost:8080/api/orders -H "Content-Type: application/json
 
 Rồi gửi SĐT sai để thấy 400:
 ```bash
-curl -i -X POST http://localhost:8080/api/orders -H "Content-Type: application/json" -d "{\"customerName\":\"Test\",\"phone\":\"901234567\",\"address\":\"1 Duong Test, Quan 1, TPHCM\",\"quantity\":1,\"paymentMethod\":0}"
+curl -i -X POST http://localhost:5080/api/orders -H "Content-Type: application/json" -d "{\"customerName\":\"Test\",\"phone\":\"901234567\",\"address\":\"1 Duong Test, Quan 1, TPHCM\",\"quantity\":1,\"paymentMethod\":0}"
 ```
 > "400 kèm `errors.Phone`, và **không có record nào được tạo** — em có test đếm số dòng trước/sau
 > để chứng minh, tên test `CreateOrder_InvalidPhone_WritesNothingToDatabase`."
@@ -276,7 +284,7 @@ curl -i -X POST http://localhost:8080/api/orders -H "Content-Type: application/j
 
 ### 2.1 Submit form đăng nhập
 
-Vào http://localhost:8080/admin/login, mở Network, đăng nhập.
+Vào http://localhost:5173/admin/login, mở Network, đăng nhập.
 
 Chiếu request `login`:
 - `POST /api/auth/login`, payload `{"email":"...","password":"..."}`
@@ -387,7 +395,7 @@ signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
 
 **Chứng minh:** đăng nhập Staff → thấy menu ít mục hơn → gọi API admin bị chặn:
 ```bash
-curl -i -X PUT http://localhost:8080/api/admin/book -H "Authorization: Bearer <TOKEN_STAFF>" -H "Content-Type: application/json" -d "{}"
+curl -i -X PUT http://localhost:5080/api/admin/book -H "Authorization: Bearer <TOKEN_STAFF>" -H "Content-Type: application/json" -d "{}"
 ```
 > "403 Forbidden. Quan trọng: em **không chỉ ẩn menu ở frontend**. Ẩn menu chỉ là cho gọn mắt,
 > ai cũng gõ thẳng URL hoặc gọi API được. Chặn thật nằm ở server."
@@ -404,7 +412,7 @@ curl -i -X PUT http://localhost:8080/api/admin/book -H "Authorization: Bearer <T
 
 ### 3.1 Load trang, chiếu Network
 
-Vào http://localhost:8080/admin/orders. Trong Network chiếu request:
+Vào http://localhost:5173/admin/orders. Trong Network chiếu request:
 ```
 GET /api/admin/orders?page=1&pageSize=10
 Request Headers: Authorization: Bearer eyJ...
@@ -479,7 +487,7 @@ Bấm "Đã xác nhận" trên một đơn, chiếu Network: `PATCH /api/admin/o
 
 **Chứng minh:**
 ```bash
-curl -i -X PATCH http://localhost:8080/api/admin/orders/1/status -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d "{\"status\":0}"
+curl -i -X PATCH http://localhost:5080/api/admin/orders/1/status -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d "{\"status\":0}"
 ```
 > "Đơn đang ở Đã xác nhận mà em ép về Mới — server trả 400 kèm lý do."
 

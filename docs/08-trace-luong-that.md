@@ -7,6 +7,11 @@ SQL Server.
 Dùng file này để vừa quay vừa đọc: mỗi bước có **cái gì xảy ra** → **ở file nào dòng nào** →
 **bằng chứng chiếu lên**.
 
+> **Về cổng trong các ảnh chụp bên dưới:** lúc bắt dữ liệu này hệ thống đang chạy bằng Docker nên
+> địa chỉ là `localhost:8080`. Hiện tại dự án chạy trực tiếp trên máy với LocalDB, nên web ở
+> **`localhost:5173`** và API ở **`localhost:5080`**. Nội dung request, câu SQL và record trong
+> database thì **y hệt** — chỉ khác số cổng.
+
 ---
 
 # LUỒNG 1 — Khách bấm "Xác nhận đặt hàng"
@@ -465,33 +470,35 @@ options.Events = new JwtBearerEvents { OnTokenValidated = ActiveUserValidator.Va
 
 # Cách tự bắt lại các số này khi quay
 
-```bash
-# 1. Bật log SQL: mở .env sửa SQL_LOG_LEVEL=Information
-docker compose up -d
+```powershell
+# Terminal 1 - backend. Cau SQL in thang ra cua so nay, de nguyen de quay.
+$env:ASPNETCORE_ENVIRONMENT="Development"
+dotnet run --project backend/NhaGiaKim.Api --urls http://localhost:5080 --no-launch-profile
 
-# 2. Cửa sổ riêng, để chạy suốt lúc quay
-docker compose logs -f api
-
-# 3. Xem record trong database
-docker compose exec sqlserver /opt/mssql-tools18/bin/sqlcmd \
-  -S localhost -U sa -P "$MSSQL_SA_PASSWORD" -C -d NhaGiaKim \
-  -Q "SELECT TOP 3 Id, OrderCode, Quantity, UnitPrice, TotalPrice, Status FROM Orders ORDER BY Id DESC"
+# Terminal 2 - frontend
+npm --prefix frontend run dev
 ```
 
-> Git Bash trên Windows thì thêm `MSYS_NO_PATHCONV=1` vào đầu lệnh thứ 3.
+Xem record trong database: mở **SSMS** → server `(localdb)\MSSQLLocalDB` → Windows Authentication →
+
+```sql
+USE NhaGiaKim;
+SELECT TOP 3 Id, OrderCode, Quantity, UnitPrice, TotalPrice, Status
+FROM Orders ORDER BY Id DESC;
+```
 
 # Hai thứ nên chứng minh ngay trên video
 
 **1. Server không tin giá client gửi**
 ```bash
-curl -X POST http://localhost:8080/api/orders -H "Content-Type: application/json" \
+curl -X POST http://localhost:5080/api/orders -H "Content-Type: application/json" \
   -d "{\"customerName\":\"Thu Gian Lan\",\"phone\":\"0905000111\",\"address\":\"1 Duong Test, Quan 1, TPHCM\",\"quantity\":3,\"paymentMethod\":0,\"totalPrice\":1,\"unitPrice\":1}"
 ```
 Gửi kèm `totalPrice: 1` mà kết quả vẫn ra `207000`.
 
 **2. Sai định dạng là chặn, không tạo record**
 ```bash
-curl -i -X POST http://localhost:8080/api/orders -H "Content-Type: application/json" \
+curl -i -X POST http://localhost:5080/api/orders -H "Content-Type: application/json" \
   -d "{\"customerName\":\"Test\",\"phone\":\"901234567\",\"address\":\"1 Duong Test, Quan 1, TPHCM\",\"quantity\":1,\"paymentMethod\":0}"
 ```
 400 kèm `errors.Phone`, đếm lại bảng `Orders` thấy số dòng không đổi.
