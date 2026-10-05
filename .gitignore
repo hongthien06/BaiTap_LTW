@@ -47,3 +47,6 @@ docs/gate-report*.txt
 .idea/
 .DS_Store
 Thumbs.db
+
+# File ghi mat khau ket noi SSMS cho may ca nhan - KHONG commit
+KET-NOI-SSMS.txt
