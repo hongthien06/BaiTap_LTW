@@ -21,7 +21,7 @@ const book: Book = {
 describe('HeroSection', () => {
   // AC-2
   it('hiển thị title, subtitle, ảnh mockup và giá', () => {
-    render(<HeroSection book={book} onOrderClick={vi.fn()} />)
+    render(<HeroSection book={book} average={4.7} reviewCount={3} onOrderClick={vi.fn()} onReviewClick={vi.fn()} />)
 
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Nhà Giả Kim')
     expect(screen.getByText(book.subtitle)).toBeInTheDocument()
@@ -31,7 +31,7 @@ describe('HeroSection', () => {
 
   // AC-2: có giảm giá thì giá gốc phải gạch ngang
   it('gạch ngang giá gốc khi có giá giảm', () => {
-    render(<HeroSection book={book} onOrderClick={vi.fn()} />)
+    render(<HeroSection book={book} average={4.7} reviewCount={3} onOrderClick={vi.fn()} onReviewClick={vi.fn()} />)
 
     const original = screen.getByTestId('original-price')
     expect(original.tagName).toBe('S')
@@ -41,7 +41,7 @@ describe('HeroSection', () => {
 
   // AC-3
   it('không hiện giá gạch ngang và badge khi không có giá giảm', () => {
-    render(<HeroSection book={{ ...book, discountPrice: null }} onOrderClick={vi.fn()} />)
+    render(<HeroSection book={{ ...book, discountPrice: null }} average={4.7} reviewCount={3} onOrderClick={vi.fn()} onReviewClick={vi.fn()} />)
 
     expect(screen.queryByTestId('original-price')).not.toBeInTheDocument()
     expect(screen.queryByTestId('discount-badge')).not.toBeInTheDocument()
@@ -50,7 +50,7 @@ describe('HeroSection', () => {
 
   // AC-3: giá giảm không hợp lệ (>= giá gốc) thì coi như không giảm
   it('bỏ qua giá giảm lớn hơn hoặc bằng giá gốc', () => {
-    render(<HeroSection book={{ ...book, discountPrice: 99000 }} onOrderClick={vi.fn()} />)
+    render(<HeroSection book={{ ...book, discountPrice: 99000 }} average={4.7} reviewCount={3} onOrderClick={vi.fn()} onReviewClick={vi.fn()} />)
 
     expect(screen.queryByTestId('discount-badge')).not.toBeInTheDocument()
     expect(screen.getByTestId('sell-price')).toHaveTextContent('89.000')
@@ -58,7 +58,7 @@ describe('HeroSection', () => {
 
   it('gọi onOrderClick khi bấm Đặt mua ngay', async () => {
     const onOrderClick = vi.fn()
-    render(<HeroSection book={book} onOrderClick={onOrderClick} />)
+    render(<HeroSection book={book} average={4.7} reviewCount={3} onOrderClick={onOrderClick} onReviewClick={vi.fn()} />)
 
     await userEvent.click(screen.getByRole('button', { name: /đặt mua ngay/i }))
 

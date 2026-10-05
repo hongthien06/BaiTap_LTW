@@ -1,0 +1,846 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Wireframe — Nhà Giả Kim</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+
+<style type="text/tailwindcss">
+/* ===== TOKEN CỦA DỰ ÁN, xếp theo vai =====
+   Nguồn: frontend/src/index.css (--color-ink, --color-sand, --color-gold, --color-gold-dark,
+   --font-display). Dự án mới chỉ khai 4 màu + 1 font, nên ở đây xếp chúng vào vai
+   (primary / background / surface / foreground / muted / border) đúng như bước dựng sẽ làm.
+   Không thêm mã màu nào ngoài khối này. */
+:root {
+  color-scheme: light;
+
+  --app-font: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --display-font: "Playfair Display", Georgia, serif;
+
+  /* Màu nhấn = vàng của brand.
+     CHỮ TRÊN NỀN NHẤN LÀ MỰC, KHÔNG PHẢI TRẮNG: trắng trên #c8973f chỉ 2.64:1 (trượt AA),
+     mực trên vàng 6.5:1. Đây là lỗi Ant Design mặc định sẽ mắc ở trang quản trị. */
+  --primary: #c8973f;
+  --primary-hover: #a97a28;
+  --primary-foreground: #1b1b1f;
+  --primary-light: #c8973f1a;
+
+  --background: #f6f1e7;      /* nền kem của brand */
+  --surface: #ffffff;
+  --foreground: #1b1b1f;      /* mực */
+  --muted: #6f6a60;           /* xám ngả ấm cho hợp nền kem, 4.9:1 trên surface */
+  --border: #ece5d7;
+  --border-strong: #ddd3c0;
+
+  --surface-overlay: #ffffff;
+  --elevation-popover: 0 10px 15px -3px rgb(27 27 31 / .10), 0 4px 6px -4px rgb(27 27 31 / .10);
+  --elevation-modal: 0 20px 25px -5px rgb(27 27 31 / .12), 0 8px 10px -6px rgb(27 27 31 / .12);
+
+  --border-focus: var(--primary);
+  --ring-focus: color-mix(in srgb, var(--primary) 35%, transparent);
+
+  --success: #15803d;  --success-bg: #dcfce7;
+  --warning: #b45309;  --warning-bg: #fef3c7;
+  --danger:  #b91c1c;  --danger-bg:  #fee2e2;
+  --info:    #1d4ed8;  --info-bg:    #dbeafe;
+
+  --radius: 12px;
+}
+
+/* Nấc Xám: CHỈ đổi màu nhấn và màu trạng thái sang xám.
+   Nền, viền, chữ, bo góc, font giữ nguyên token — bật Màu lên là ra đúng bản dựng. */
+:root[data-mau="xam"] {
+  --primary: #3f3b35;
+  --primary-hover: #56514a;
+  --primary-foreground: #ffffff;
+  --primary-light: #3f3b350f;
+  --border-focus: #3f3b35;
+  --ring-focus: #3f3b3540;
+  --success: #44403c; --success-bg: #e7e5e4;
+  --warning: #44403c; --warning-bg: #e7e5e4;
+  --danger:  #44403c; --danger-bg:  #e7e5e4;
+  --info:    #44403c; --info-bg:    #e7e5e4;
+}
+
+@theme inline {
+  --font-sans: var(--app-font);
+  --font-display: var(--display-font);
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-light: var(--primary-light);
+  --color-success: var(--success); --color-success-bg: var(--success-bg);
+  --color-warning: var(--warning); --color-warning-bg: var(--warning-bg);
+  --color-danger: var(--danger);   --color-danger-bg: var(--danger-bg);
+  --color-info: var(--info);       --color-info-bg: var(--info-bg);
+  --radius-card: var(--radius);
+  --shadow-popover: var(--elevation-popover);
+  --shadow-modal: var(--elevation-modal);
+}
+
+body { font-family: var(--app-font); background: var(--background); color: var(--foreground); }
+.font-display { font-family: var(--display-font); }
+
+/* Khung đánh số khối — chỉ của wireframe, không vào bản dựng */
+[data-wf-block] { position: relative; outline: 1px dashed color-mix(in srgb, var(--foreground) 14%, transparent); outline-offset: 0; }
+[data-wf-block]::before {
+  content: attr(data-wf-block);
+  position: absolute; top: 0; left: 0; z-index: 40;
+  font: 600 10px/1 var(--app-font); letter-spacing: .02em;
+  padding: 3px 5px; border-radius: 0 0 6px 0;
+  background: var(--foreground); color: var(--background);
+}
+[data-wf-block][data-wf-block-out]::before { top: -15px; left: -1px; border-radius: 6px 6px 0 0; }
+.wf-plain [data-wf-block] { outline: none; }
+.wf-plain [data-wf-block]::before { display: none; }
+
+/* Ảnh giữ chỗ: khối có tỉ lệ thật của bìa sách 2:3 */
+.ph { background: repeating-linear-gradient(45deg, color-mix(in srgb, var(--foreground) 6%, transparent) 0 8px, transparent 8px 16px), var(--surface); }
+
+input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible, a:focus-visible {
+  outline: 2px solid var(--border-focus); outline-offset: 2px;
+}
+</style>
+</head>
+<body class="text-[15px]">
+
+<!-- ======================= THANH CÔNG CỤ ======================= -->
+<div id="bar" class="sticky top-0 z-50 border-b border-border-strong bg-surface/95 backdrop-blur">
+  <div class="mx-auto flex max-w-[1400px] flex-wrap items-center gap-x-5 gap-y-2 px-4 py-2.5 text-[13px]">
+    <span class="font-display text-base font-semibold">Nhà Giả Kim — wireframe</span>
+
+    <span class="flex items-center gap-1">
+      <span class="text-muted">Màn:</span>
+      <button data-set="man" data-val="landing" class="seg">Landing</button>
+      <button data-set="man" data-val="don-hang" class="seg">Đơn hàng</button>
+    </span>
+
+    <span class="flex items-center gap-1">
+      <span class="text-muted">Phương án:</span>
+      <button data-set="v" data-val="a" class="seg">A</button>
+      <button data-set="v" data-val="b" class="seg">B</button>
+      <button data-set="v" data-val="c" class="seg">C</button>
+      <span class="mx-1 h-4 w-px bg-border-strong"></span>
+      <button data-set="v" data-val="d" class="seg" title="Biến thể nội dung của phương án khuyên dùng">D gọn chữ</button>
+      <button data-set="v" data-val="e" class="seg" title="Biến thể nội dung của phương án khuyên dùng">E bỏ lặp</button>
+    </span>
+
+    <span class="flex items-center gap-1">
+      <span class="text-muted">Màu:</span>
+      <button data-set="mau" data-val="xam" class="seg">Xám</button>
+      <button data-set="mau" data-val="mau" class="seg">Màu</button>
+    </span>
+
+    <span class="flex items-center gap-1">
+      <span class="text-muted">Khổ:</span>
+      <button data-set="kho" data-val="desktop" class="seg">Desktop</button>
+      <button data-set="kho" data-val="mobile" class="seg">Mobile</button>
+    </span>
+
+    <span class="flex items-center gap-1" id="tt-group">
+      <span class="text-muted">Trạng thái:</span>
+      <button data-set="tt" data-val="du-lieu" class="seg">Có dữ liệu</button>
+      <button data-set="tt" data-val="dang-tai" class="seg">Đang tải</button>
+      <button data-set="tt" data-val="rong" class="seg">Rỗng</button>
+      <button data-set="tt" data-val="loi" class="seg">Lỗi</button>
+    </span>
+
+    <span class="ml-auto flex items-center gap-1">
+      <button id="toggle-so" class="seg">Ẩn số khối</button>
+    </span>
+  </div>
+</div>
+
+<!-- ======================= KHUNG LÝ DO ======================= -->
+<div id="ly-do" class="mx-auto max-w-[1400px] px-4 pt-4"></div>
+
+<!-- ======================= SÂN KHẤU ======================= -->
+<div id="san" class="mx-auto max-w-[1400px] px-4 py-4"></div>
+
+<style type="text/tailwindcss">
+.seg { @apply rounded-md border border-border-strong bg-surface px-2.5 py-1 text-[13px] text-muted; }
+.seg[aria-pressed="true"] { @apply border-transparent bg-primary text-primary-foreground font-medium; }
+.seg:disabled { @apply opacity-35; }
+</style>
+
+<script>
+// ---------------------------------------------------------------- tham số
+const P = new URLSearchParams(location.search);
+const S = {
+  man: P.get('man') || 'landing',
+  v:   P.get('v')   || 'a',
+  mau: P.get('mau') || 'xam',
+  kho: P.get('kho') || 'desktop',
+  tt:  P.get('tt')  || 'du-lieu',
+  frame: P.get('frame') === '1',
+  so: P.get('so') !== '0',
+};
+function go(k, val) {
+  const p = new URLSearchParams(location.search);
+  p.set(k, val);
+  location.search = p.toString();
+}
+
+// ---------------------------------------------------------------- dữ liệu thật của dự án
+const SACH = {
+  ten: 'Nhà Giả Kim',
+  theLoai: 'Tiểu thuyết / Truyền cảm hứng',
+  title: 'Nhà Giả Kim',
+  subtitle: 'Khi bạn khao khát một điều gì đó, cả vũ trụ sẽ hợp lực giúp bạn đạt được điều đó.',
+  moTa: 'Câu chuyện về chàng trai chăn cừu Santiago trên hành trình đi tìm kho báu và khám phá ra ý nghĩa thật sự của vận mệnh cá nhân.',
+  gia: 89000, giaGiam: 69000,
+  tacGia: 'Paulo Coelho',
+  tieuSu: 'Tiểu thuyết gia người Brazil, tác giả của nhiều đầu sách được dịch ra hơn 80 ngôn ngữ.',
+};
+const BAO_CHI = [
+  { ten: 'Tuổi Trẻ',   trich: 'Một trong những cuốn sách bán chạy nhất mọi thời đại.' },
+  { ten: 'Thanh Niên', trich: 'Hành trình đi tìm vận mệnh cá nhân được kể lại đầy cuốn hút.' },
+  { ten: 'VnExpress',  trich: 'Cuốn sách nên đọc ít nhất một lần trong đời.' },
+];
+const DANH_GIA = [
+  { ten: 'Trần Thị Bích Ngọc', sao: 5, noiDung: 'Đọc một mạch hết trong hai tối. Bản dịch mượt, giấy đẹp, đóng gói cẩn thận.' },
+  { ten: 'Lê Minh',            sao: 4, noiDung: 'Nội dung hay nhưng hơi ngắn so với kỳ vọng.' },
+  { ten: 'Nguyễn Hoàng Anh Tuấn Kiệt', sao: 5, noiDung: 'Mua tặng em gái, bé thích lắm. Giao nhanh, gọi xác nhận trước khi giao.' },
+];
+// "Bây giờ" của wireframe: 2026-10-05 14:30. Cố ý để có đơn QUÁ HẠN XỬ LÝ —
+// trạng thái này KHÔNG có trong dữ liệu (chỉ lưu New/Confirmed/...), nó suy từ giờ,
+// nên hay bị quên, mà lại đúng là việc chính của Staff: gọi những đơn mới để lâu chưa xác nhận.
+const DON = [
+  { ma: 'NGK-20261005-7WM5', ten: 'Nguyễn Văn An',  sdt: '0901234567', dc: '12 Nguyễn Huệ, P. Bến Nghé, Q.1, TP.HCM', sl: 2, tong: 138000, tt: 'New',       pt: 'COD',  gio: '2026-10-05T09:05', note: 'Giao giờ hành chính' },
+  { ma: 'NGK-20261005-L5X3', ten: 'Trần Thị Bích Ngọc', sdt: '0912345678', dc: '45/3 Lê Lợi, P. Phú Hoà, TP. Thủ Dầu Một, Bình Dương', sl: 1, tong: 69000, tt: 'New', pt: 'BankTransfer', gio: '2026-10-05T14:12', note: '' },
+  { ma: 'NGK-20261005-8AMZ', ten: 'Lê Minh',        sdt: '0988888888', dc: '7 Trần Phú, Hải Châu, Đà Nẵng', sl: 3, tong: 207000, tt: 'Confirmed', pt: 'COD', gio: '2026-10-05T11:40', note: '' },
+  { ma: 'NGK-20261004-UC9A', ten: 'Phạm Quốc Huy',  sdt: '0909999999', dc: '220 Cầu Giấy, Hà Nội', sl: 1, tong: 69000, tt: 'Shipping',  pt: 'BankTransfer', gio: '2026-10-04T16:20', note: 'Gọi trước khi giao' },
+  { ma: 'NGK-20261004-K2PQ', ten: 'Võ Thị Hồng Nhung', sdt: '0977000111', dc: '3 Hùng Vương, TP. Huế', sl: 5, tong: 345000, tt: 'Completed', pt: 'COD', gio: '2026-10-04T08:15', note: '' },
+  { ma: 'NGK-20261003-M4RT', ten: 'Đỗ Trung',       sdt: '0966000111', dc: '88 Nguyễn Trãi, Thanh Xuân, Hà Nội', sl: 1, tong: 69000, tt: 'Cancelled', pt: 'COD', gio: '2026-10-03T19:02', note: 'Khách đổi ý' },
+];
+const BAY_GIO = new Date('2026-10-05T14:30');
+const NHAN_TT = { New: 'Mới', Confirmed: 'Đã xác nhận', Shipping: 'Đang giao', Completed: 'Hoàn thành', Cancelled: 'Đã huỷ' };
+const NHAN_PT = { COD: 'COD', BankTransfer: 'Chuyển khoản' };
+
+const tien = n => n.toLocaleString('vi-VN') + '₫';
+const gioNgan = iso => { const d = new Date(iso); return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')} ${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`; };
+/** Đơn Mới để quá 4 giờ mà chưa xác nhận = quá hạn xử lý. Suy từ giờ, không nằm trong DB. */
+const quaHan = d => d.tt === 'New' && (BAY_GIO - new Date(d.gio)) > 4 * 3600 * 1000;
+
+function badgeTT(d) {
+  if (quaHan(d)) return `<span class="inline-flex items-center gap-1 rounded-full bg-danger-bg px-2 py-0.5 text-[12px] font-medium text-danger"><i data-lucide="clock-alert" class="size-3"></i>Quá hạn xử lý</span>`;
+  const map = {
+    New:       ['bg-info-bg text-info', 'inbox'],
+    Confirmed: ['bg-info-bg text-info', 'check'],
+    Shipping:  ['bg-warning-bg text-warning', 'truck'],
+    Completed: ['bg-success-bg text-success', 'check-check'],
+    Cancelled: ['bg-danger-bg text-danger', 'x'],
+  }[d.tt];
+  return `<span class="inline-flex items-center gap-1 rounded-full ${map[0]} px-2 py-0.5 text-[12px] font-medium"><i data-lucide="${map[1]}" class="size-3"></i>${NHAN_TT[d.tt]}</span>`;
+}
+const sao = n => `<span class="text-primary" aria-label="${n} trên 5 sao">${'★'.repeat(n)}<span class="text-foreground/25">${'☆'.repeat(5-n)}</span></span>`;
+
+// ---------------------------------------------------------------- mảnh dùng chung
+const btnChinh = (chu, icon) => `<button class="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-5 h-11 font-semibold text-primary-foreground hover:bg-primary-hover">${icon?`<i data-lucide="${icon}" class="size-4"></i>`:''}${chu}</button>`;
+const btnPhu   = (chu, icon) => `<button class="inline-flex items-center justify-center gap-2 rounded-lg border border-border-strong bg-surface px-4 h-11 font-medium hover:border-foreground/30">${icon?`<i data-lucide="${icon}" class="size-4"></i>`:''}${chu}</button>`;
+const o = (nhan, ph, type='text') => `
+  <label class="block">
+    <span class="mb-1.5 block text-[13px] font-medium">${nhan}</span>
+    <input type="${type}" placeholder="${ph}" class="h-11 w-full rounded-lg border border-border-strong bg-surface px-3 placeholder:text-muted" />
+  </label>`;
+
+const giaKhoi = (lon) => `
+  <div class="flex flex-wrap items-baseline gap-3">
+    <span class="${lon?'text-4xl':'text-2xl'} font-semibold text-primary">${tien(SACH.giaGiam)}</span>
+    <s class="text-muted">${tien(SACH.gia)}</s>
+    <span class="rounded-full bg-primary px-2.5 py-0.5 text-[13px] font-semibold text-primary-foreground">-22%</span>
+  </div>`;
+
+const anhSach = (cls) => `<div class="ph ${cls} rounded-card border border-border-strong grid place-items-center text-center">
+    <span class="font-display text-xl leading-tight">NHÀ<br/>GIẢ KIM</span>
+  </div>`;
+
+const formDat = (gon) => `
+  <div class="grid gap-4 ${gon?'':'sm:grid-cols-2'}">
+    ${o('Họ tên', 'Nguyễn Văn An')}
+    ${o('Số điện thoại', '0901234567', 'tel')}
+    <div class="${gon?'':'sm:col-span-2'}">${o('Địa chỉ nhận hàng', '12 Nguyễn Huệ, P. Bến Nghé, Q.1, TP.HCM')}</div>
+    <label class="block">
+      <span class="mb-1.5 block text-[13px] font-medium">Số lượng</span>
+      <div class="flex h-11 w-32 items-center rounded-lg border border-border-strong bg-surface">
+        <button class="grid h-full w-10 place-items-center text-muted hover:text-foreground"><i data-lucide="minus" class="size-4"></i></button>
+        <span class="flex-1 text-center font-medium">1</span>
+        <button class="grid h-full w-10 place-items-center text-muted hover:text-foreground"><i data-lucide="plus" class="size-4"></i></button>
+      </div>
+    </label>
+    <fieldset class="block">
+      <legend class="mb-1.5 block text-[13px] font-medium">Thanh toán</legend>
+      <div class="flex gap-2">
+        <label class="flex h-11 flex-1 cursor-pointer items-center gap-2 rounded-lg border border-primary bg-primary-light px-3 text-[14px]">
+          <span class="grid size-4 place-items-center rounded-full border-2 border-primary"><span class="size-2 rounded-full bg-primary"></span></span>COD
+        </label>
+        <label class="flex h-11 flex-1 cursor-pointer items-center gap-2 rounded-lg border border-border-strong bg-surface px-3 text-[14px]">
+          <span class="size-4 rounded-full border-2 border-border-strong"></span>Chuyển khoản
+        </label>
+      </div>
+    </fieldset>
+  </div>
+  <p class="mt-4 flex items-baseline justify-between border-t border-border pt-4">
+    <span class="text-muted">Tạm tính</span>
+    <strong class="text-xl text-primary">${tien(SACH.giaGiam)}</strong>
+  </p>
+  <div class="mt-4">${btnChinh('Xác nhận đặt hàng', 'shopping-bag')}</div>
+  <p class="mt-3 flex items-center gap-1.5 text-[13px] text-muted"><i data-lucide="shield-check" class="size-4"></i>Gọi xác nhận trước khi giao · Kiểm hàng rồi mới trả tiền</p>`;
+
+const khoiTinCay = () => `
+  <section data-wf-block="5" class="rounded-card border border-border bg-surface p-6">
+    <h2 class="font-display text-2xl">Chi tiết tác giả</h2>
+    <div class="mt-4 flex gap-4">
+      <div class="ph size-20 shrink-0 rounded-full border border-border-strong"></div>
+      <div>
+        <p class="font-semibold text-primary">${SACH.tacGia}</p>
+        <p class="mt-1 text-muted">${SACH.tieuSu}</p>
+      </div>
+    </div>
+  </section>
+
+  <section data-wf-block="6" class="rounded-card border border-border bg-surface p-6">
+    <h2 class="font-display text-2xl">Báo chí viết về sách</h2>
+    <ul class="mt-4 grid gap-3 md:grid-cols-3">
+      ${BAO_CHI.map(b => `
+        <li class="rounded-lg border border-border p-4">
+          <p class="text-[13px] font-semibold text-primary">${b.ten}</p>
+          <blockquote class="mt-2 text-[14px] italic text-muted">“${b.trich}”</blockquote>
+          <a href="#" class="mt-3 inline-flex items-center gap-1 text-[13px] font-medium underline">Đọc bài gốc<i data-lucide="external-link" class="size-3"></i></a>
+        </li>`).join('')}
+    </ul>
+  </section>
+
+  <section data-wf-block="7" class="rounded-card border border-border bg-surface p-6">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <h2 class="font-display text-2xl">Độc giả nói gì</h2>
+      <p class="flex items-center gap-2">${sao(5)}<strong>4.7/5</strong><span class="text-muted">(3 đánh giá)</span></p>
+    </div>
+    <ul class="mt-4 grid gap-3">
+      ${DANH_GIA.map(f => `
+        <li class="rounded-lg border border-border p-4">
+          <div class="flex items-center justify-between gap-3">
+            <span class="min-w-0 flex-1 font-medium break-words">${f.ten}</span>
+            <span class="shrink-0">${sao(f.sao)}</span>
+          </div>
+          <p class="mt-1.5 text-muted">${f.noiDung}</p>
+        </li>`).join('')}
+    </ul>
+    <div class="mt-4">${btnPhu('Viết đánh giá của bạn', 'pencil')}</div>
+  </section>
+
+  <section data-wf-block="8" class="rounded-card border border-border bg-surface p-6">
+    <h2 class="font-display text-2xl">Review nội dung</h2>
+    <p class="mt-3 text-muted">Một cuốn sách ngắn nhưng đọng, phù hợp với người đang đi tìm hướng đi cho chính mình.</p>
+    <div class="mt-4">${btnPhu('Tải bản review (PDF)', 'download')}</div>
+  </section>`;
+
+// ---------------------------------------------------------------- LANDING
+function landingA() {
+  return `
+  <div class="relative">
+    <header data-wf-block="1" class="rounded-card border border-border bg-surface px-6 py-10 md:px-10 md:py-14">
+      <div class="grid items-center gap-8 md:grid-cols-[1fr_minmax(0,320px)]">
+        <div class="order-2 md:order-1">
+          <p class="text-[13px] font-medium uppercase tracking-[.18em] text-primary">${SACH.theLoai}</p>
+          <h1 class="mt-3 font-display text-4xl leading-[1.12] md:text-5xl">${SACH.title}</h1>
+          <p class="mt-4 max-w-prose text-lg text-muted">${SACH.subtitle}</p>
+          <div class="mt-6">${giaKhoi(true)}</div>
+          <div class="mt-6 flex flex-wrap gap-3">${btnChinh('Đặt mua ngay', 'shopping-bag')}${btnPhu('Đọc thử', 'book-open')}</div>
+          <p class="mt-4 flex items-center gap-2 text-[13px] text-muted">${sao(5)} 4.7/5 từ 3 đánh giá · Giao toàn quốc</p>
+        </div>
+        <div class="order-1 md:order-2">${anhSach('aspect-[2/3] w-full max-w-[280px] mx-auto')}</div>
+      </div>
+    </header>
+
+    <section data-wf-block="2" class="mt-4 rounded-card border border-border bg-surface p-6">
+      <h2 class="font-display text-2xl">Về cuốn sách</h2>
+      <p class="mt-3 max-w-prose text-muted">${SACH.moTa}</p>
+      <dl class="mt-4 grid gap-3 sm:grid-cols-2">
+        <div class="rounded-lg border border-border p-3"><dt class="text-[13px] text-muted">Tên sách</dt><dd class="mt-0.5 font-medium">${SACH.ten}</dd></div>
+        <div class="rounded-lg border border-border p-3"><dt class="text-[13px] text-muted">Thể loại</dt><dd class="mt-0.5 font-medium">${SACH.theLoai}</dd></div>
+      </dl>
+    </section>
+
+    <!-- CTA LẶP giữa trang — khối mới, đây là thứ bản hiện tại đang thiếu -->
+    <section data-wf-block="9" class="mt-4 flex flex-wrap items-center justify-between gap-4 rounded-card border border-primary bg-primary-light p-6">
+      <div><p class="font-display text-xl">Đặt sách ngay hôm nay</p><p class="text-muted">${tien(SACH.giaGiam)} · giao toàn quốc · trả tiền khi nhận</p></div>
+      ${btnChinh('Đặt mua ngay', 'shopping-bag')}
+    </section>
+
+    <div class="mt-4 grid gap-4">${khoiTinCay()}</div>
+
+    <section data-wf-block="4" class="mt-4 rounded-card border border-border bg-surface p-6">
+      <h2 class="font-display text-2xl">Đặt mua sách</h2>
+      <p class="mt-1 text-muted">Điền thông tin, chúng tôi gọi xác nhận trước khi giao.</p>
+      <div class="mt-5">${formDat(false)}</div>
+    </section>
+
+    <footer data-wf-block="10" class="mt-4 rounded-card border border-border bg-surface p-6 text-[14px] text-muted">
+      <div class="grid gap-6 md:grid-cols-3">
+        <div><p class="font-display text-lg text-foreground">Liên hệ</p><p class="mt-2">Hotline: 1900 1234</p><p>lienhe@nhagiakim.local</p></div>
+        <div><p class="font-display text-lg text-foreground">Theo dõi</p><p class="mt-2">Facebook · YouTube</p></div>
+        <div><p class="font-display text-lg text-foreground">Liên kết</p><p class="mt-2">Về cuốn sách · Tác giả · Đánh giá</p></div>
+      </div>
+      <p class="mt-6 border-t border-border pt-4 text-center text-[13px]">© 2026 Nhà Giả Kim. Bài tập môn Lập trình Web.</p>
+    </footer>
+
+    <!-- Thanh CTA dính đáy, CHỈ mobile -->
+    <div data-wf-block="11" class="sticky bottom-0 z-30 mt-4 flex items-center justify-between gap-3 rounded-card border border-border-strong bg-surface px-4 py-3 md:hidden">
+      <div><p class="text-lg font-semibold text-primary">${tien(SACH.giaGiam)}</p><p class="text-[12px] text-muted line-through">${tien(SACH.gia)}</p></div>
+      ${btnChinh('Đặt mua', 'shopping-bag')}
+    </div>
+  </div>`;
+}
+
+function landingB() {
+  return `
+  <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
+    <div class="order-2 grid gap-4 lg:order-1">
+      <header data-wf-block="1" class="rounded-card border border-border bg-surface p-6 md:p-10">
+        <p class="text-[13px] font-medium uppercase tracking-[.18em] text-primary">${SACH.theLoai}</p>
+        <h1 class="mt-3 font-display text-4xl leading-[1.12] md:text-5xl">${SACH.title}</h1>
+        <p class="mt-4 max-w-prose text-lg text-muted">${SACH.subtitle}</p>
+      </header>
+      <section data-wf-block="2" class="rounded-card border border-border bg-surface p-6">
+        <h2 class="font-display text-2xl">Về cuốn sách</h2>
+        <p class="mt-3 max-w-prose text-muted">${SACH.moTa}</p>
+      </section>
+      ${khoiTinCay()}
+      <footer data-wf-block="10" class="rounded-card border border-border bg-surface p-6 text-[14px] text-muted">
+        <p class="font-display text-lg text-foreground">Liên hệ</p>
+        <p class="mt-2">Hotline: 1900 1234 · lienhe@nhagiakim.local</p>
+        <p class="mt-4 border-t border-border pt-3 text-[13px]">© 2026 Nhà Giả Kim.</p>
+      </footer>
+    </div>
+
+    <!-- Hộp mua DÍNH suốt trang (desktop) -->
+    <aside data-wf-block="12" class="order-1 lg:order-2">
+      <div class="lg:sticky lg:top-20 rounded-card border border-border-strong bg-surface p-5">
+        ${anhSach('aspect-[2/3] w-full max-w-[200px] mx-auto')}
+        <div class="mt-5">${giaKhoi(false)}</div>
+        <p class="mt-3 flex items-center gap-2 text-[13px] text-muted">${sao(5)} 4.7/5 · 3 đánh giá</p>
+        <div class="mt-4 grid gap-2">${btnChinh('Đặt mua ngay', 'shopping-bag')}${btnPhu('Tải bản review', 'download')}</div>
+        <ul class="mt-4 grid gap-2 border-t border-border pt-4 text-[13px] text-muted">
+          <li class="flex items-center gap-2"><i data-lucide="truck" class="size-4"></i>Giao toàn quốc 2–5 ngày</li>
+          <li class="flex items-center gap-2"><i data-lucide="hand-coins" class="size-4"></i>Trả tiền khi nhận hàng</li>
+          <li class="flex items-center gap-2"><i data-lucide="phone" class="size-4"></i>Gọi xác nhận trước khi giao</li>
+        </ul>
+      </div>
+    </aside>
+  </div>
+
+  <section data-wf-block="4" class="mt-4 rounded-card border border-border bg-surface p-6">
+    <h2 class="font-display text-2xl">Đặt mua sách</h2>
+    <div class="mt-5 max-w-2xl">${formDat(false)}</div>
+  </section>`;
+}
+
+function landingC() {
+  return `
+  <header data-wf-block="1" class="rounded-card border border-border bg-surface p-6 md:p-10">
+    <div class="grid gap-8 lg:grid-cols-[1fr_minmax(0,420px)]">
+      <div>
+        <p class="text-[13px] font-medium uppercase tracking-[.18em] text-primary">${SACH.theLoai}</p>
+        <h1 class="mt-3 font-display text-4xl leading-[1.12] md:text-5xl">${SACH.title}</h1>
+        <p class="mt-4 max-w-prose text-lg text-muted">${SACH.subtitle}</p>
+        <div class="mt-6 flex items-end gap-6">
+          ${anhSach('aspect-[2/3] w-[150px] shrink-0')}
+          <div>${giaKhoi(true)}<p class="mt-3 flex items-center gap-2 text-[13px] text-muted">${sao(5)} 4.7/5 · 3 đánh giá</p></div>
+        </div>
+      </div>
+      <!-- Form đặt hàng ngay trong màn đầu -->
+      <div data-wf-block="4" class="rounded-card border border-primary bg-primary-light p-5">
+        <h2 class="font-display text-xl">Đặt mua ngay</h2>
+        <div class="mt-4">${formDat(true)}</div>
+      </div>
+    </div>
+  </header>
+
+  <section data-wf-block="2" class="mt-4 rounded-card border border-border bg-surface p-6">
+    <h2 class="font-display text-2xl">Về cuốn sách</h2>
+    <p class="mt-3 max-w-prose text-muted">${SACH.moTa}</p>
+  </section>
+
+  <div class="mt-4 grid gap-4">${khoiTinCay()}</div>
+
+  <footer data-wf-block="10" class="mt-4 rounded-card border border-border bg-surface p-6 text-center text-[13px] text-muted">
+    Hotline 1900 1234 · © 2026 Nhà Giả Kim.
+  </footer>`;
+}
+
+// ---------------------------------------------------------------- ĐƠN HÀNG (admin)
+function khungAdmin(noiDung) {
+  const muc = [['Đơn đặt hàng','package','1'],['Đánh giá','star',''],['Thông tin sách','book',''],['Nội dung landing','layout-template',''],['Cấu hình','settings',''],['Tài khoản','users','']];
+  return `
+  <div class="grid gap-4 lg:grid-cols-[232px_minmax(0,1fr)]">
+    <aside data-wf-block="20" class="hidden rounded-card border border-border bg-surface p-3 lg:block">
+      <p class="px-2 py-2 font-display text-lg">Nhà Giả Kim</p>
+      <nav class="mt-2 grid gap-0.5">
+        ${muc.map((m,i) => `
+          <a href="#" ${i===0?'aria-current="page"':''} class="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[14px] ${i===0?'bg-primary-light font-medium text-primary':'text-muted hover:bg-background'}">
+            <i data-lucide="${m[1]}" class="size-4"></i><span class="flex-1">${m[0]}</span>
+            ${m[2]?`<span class="rounded-full ${i===0?'bg-primary text-primary-foreground':'bg-background text-muted'} px-1.5 text-[11px] font-semibold">2</span>`:''}
+          </a>`).join('')}
+      </nav>
+    </aside>
+    <main class="grid gap-4">${noiDung}</main>
+  </div>`;
+}
+
+function thanhLoc() {
+  return `
+  <div data-wf-block="21" class="flex flex-wrap items-center gap-2 rounded-card border border-border bg-surface p-3">
+    <label class="relative flex-1 min-w-[220px]">
+      <i data-lucide="search" class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted"></i>
+      <input placeholder="Tìm mã đơn hoặc số điện thoại" class="h-10 w-full rounded-lg border border-border-strong bg-surface pl-9 pr-3 placeholder:text-muted" />
+    </label>
+    <div class="flex flex-wrap items-center gap-1.5">
+      ${['Tất cả','Quá hạn','Mới','Đã xác nhận','Đang giao','Hoàn thành'].map((c,i)=>`
+        <button class="rounded-full border px-3 h-8 text-[13px] ${i===1?'border-transparent bg-primary text-primary-foreground font-medium':'border-border-strong bg-surface text-muted'}">${c}</button>`).join('')}
+    </div>
+    <button class="inline-flex h-10 items-center gap-2 rounded-lg border border-border-strong bg-surface px-3 text-[14px]"><i data-lucide="calendar" class="size-4"></i>Hôm nay</button>
+  </div>`;
+}
+
+function hangDon(d, bien) {
+  const gon = bien === 'a' || bien === 'd' || bien === 'e';   // cac phuong an co panel
+  const rutGon = bien === 'd';
+  const qh = quaHan(d);
+  return `
+  <tr class="border-b border-border last:border-0 ${qh?'bg-danger-bg/40':''} hover:bg-background">
+    <td class="sticky left-0 z-10 ${qh?'bg-danger-bg/40':'bg-surface'} whitespace-nowrap px-3 py-2.5 font-medium">${d.ma}</td>
+    <td class="px-3 py-2.5"><span class="block max-w-[180px] truncate">${d.ten}</span><span class="block whitespace-nowrap text-[13px] text-muted">${d.sdt}${rutGon?' · '+gioNgan(d.gio):''}</span></td>
+    ${gon?'':`<td class="px-3 py-2.5 text-[13px] text-muted"><span class="block max-w-[220px] truncate">${d.dc}</span></td>`}
+    ${gon?'':`<td class="px-3 py-2.5 text-right tabular-nums">${d.sl}</td>`}
+    <td class="whitespace-nowrap px-3 py-2.5 text-right font-medium tabular-nums">${tien(d.tong)}</td>
+    ${gon?'':`<td class="whitespace-nowrap px-3 py-2.5 text-[13px] text-muted">${NHAN_PT[d.pt]}</td>`}
+    <td class="px-3 py-2.5">${badgeTT(d)}</td>
+    ${rutGon?'':`<td class="whitespace-nowrap px-3 py-2.5 text-[13px] text-muted">${gioNgan(d.gio)}</td>`}
+  </tr>`;
+}
+
+const khoiRong = () => `
+  <div class="grid place-items-center rounded-card border border-border bg-surface px-6 py-16 text-center">
+    <div class="grid size-12 place-items-center rounded-full bg-background"><i data-lucide="inbox" class="size-5 text-muted"></i></div>
+    <p class="mt-4 font-medium">Chưa có đơn nào khớp bộ lọc</p>
+    <p class="mt-1 max-w-sm text-[14px] text-muted">Thử bỏ bớt điều kiện lọc, hoặc chọn khoảng ngày rộng hơn.</p>
+    <div class="mt-5">${btnPhu('Xoá bộ lọc', 'filter-x')}</div>
+  </div>`;
+
+const khoiLoi = () => `
+  <div class="grid place-items-center rounded-card border border-danger/30 bg-danger-bg/40 px-6 py-16 text-center">
+    <div class="grid size-12 place-items-center rounded-full bg-surface"><i data-lucide="triangle-alert" class="size-5 text-danger"></i></div>
+    <p class="mt-4 font-medium">Không tải được danh sách đơn</p>
+    <p class="mt-1 max-w-sm text-[14px] text-muted">Mất kết nối tới máy chủ. Mã lỗi: 0HNP1SD071KBR.</p>
+    <div class="mt-5">${btnPhu('Thử lại', 'rotate-cw')}</div>
+  </div>`;
+
+const khoiTai = () => `
+  <div class="overflow-hidden rounded-card border border-border bg-surface">
+    ${Array.from({length:6}).map(()=>`
+      <div class="flex items-center gap-3 border-b border-border px-3 py-3.5 last:border-0">
+        <div class="h-4 w-40 animate-pulse rounded bg-background"></div>
+        <div class="h-4 w-36 animate-pulse rounded bg-background"></div>
+        <div class="ml-auto h-6 w-24 animate-pulse rounded-full bg-background"></div>
+      </div>`).join('')}
+  </div>`;
+
+function bangDon(bien) {
+  const cot = bien === 'd'
+    ? ['Mã đơn','Khách hàng','Tổng tiền','Trạng thái']
+    : (bien === 'a' || bien === 'e')
+      ? ['Mã đơn','Khách hàng','Tổng tiền','Trạng thái','Ngày đặt']
+      : ['Mã đơn','Khách hàng','Địa chỉ','SL','Tổng tiền','Thanh toán','Trạng thái','Ngày đặt'];
+  return `
+  <div data-wf-block="22" class="overflow-hidden rounded-card border border-border bg-surface">
+    <!-- Mobile: moi don mot the, khong cuon ngang -->
+    <ul class="divide-y divide-border md:hidden">
+      ${DON.map(d => `
+        <li class="grid gap-1.5 px-4 py-3 ${quaHan(d) ? 'bg-danger-bg/40' : ''}">
+          <div class="flex items-center justify-between gap-3">
+            <span class="font-medium">${d.ma}</span>${badgeTT(d)}
+          </div>
+          <div class="flex items-center justify-between gap-3">
+            <span class="min-w-0 flex-1 truncate">${d.ten} · ${d.sdt}</span>
+            <span class="shrink-0 font-medium tabular-nums">${tien(d.tong)}</span>
+          </div>
+          <div class="text-[13px] text-muted">${d.sl} cuốn · ${NHAN_PT[d.pt]} · ${gioNgan(d.gio)}</div>
+        </li>`).join('')}
+    </ul>
+    <div class="hidden overflow-x-auto md:block">
+      <table class="w-full ${bien==='b'?'min-w-[900px]':''} text-[14px]">
+        <thead><tr class="border-b border-border-strong text-left text-[13px] text-muted">
+          ${cot.map((c,i)=>`<th class="${i===0?'sticky left-0 z-10 bg-surface ':''}${['SL','Tổng tiền'].includes(c)?'text-right ':''}whitespace-nowrap px-3 py-2.5 font-medium">${c}</th>`).join('')}
+        </tr></thead>
+        <tbody>${DON.map(d=>hangDon(d,bien)).join('')}</tbody>
+      </table>
+    </div>
+    <div class="flex flex-wrap items-center justify-between gap-3 border-t border-border px-3 py-2.5 text-[13px] text-muted">
+      <span>6 trong 24 đơn</span>
+      <div class="flex items-center gap-1">
+        <button class="grid size-8 place-items-center rounded-md border border-border-strong"><i data-lucide="chevron-left" class="size-4"></i></button>
+        <button class="grid size-8 place-items-center rounded-md bg-primary font-medium text-primary-foreground">1</button>
+        <button class="grid size-8 place-items-center rounded-md border border-border-strong">2</button>
+        <button class="grid size-8 place-items-center rounded-md border border-border-strong">3</button>
+        <span class="px-1">…</span>
+        <button class="grid size-8 place-items-center rounded-md border border-border-strong"><i data-lucide="chevron-right" class="size-4"></i></button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function panelChiTiet(bien) {
+  const d = DON[0];
+  return `
+  <aside data-wf-block="23" class="rounded-card border border-border-strong bg-surface p-5">
+    <div class="flex items-start justify-between gap-3">
+      <div><p class="font-display text-xl">${d.ma}</p><p class="mt-1 text-[13px] text-muted">Đặt lúc ${gioNgan(d.gio)}</p></div>
+      ${badgeTT(d)}
+    </div>
+    ${bien==='e' ? '' : `
+    <dl class="mt-5 grid gap-3 border-t border-border pt-4 text-[14px]">
+      <div><dt class="text-[13px] text-muted">Khách hàng</dt><dd class="mt-0.5 font-medium">${d.ten}</dd></div>
+      <div><dt class="text-[13px] text-muted">Điện thoại</dt><dd class="mt-0.5 font-medium">${d.sdt}</dd></div>
+    </dl>`}
+    <dl class="mt-3 grid gap-3 ${bien==='e'?'border-t border-border pt-4':''} text-[14px]">
+      <div><dt class="text-[13px] text-muted">Địa chỉ</dt><dd class="mt-0.5">${d.dc}</dd></div>
+      <div><dt class="text-[13px] text-muted">Ghi chú</dt><dd class="mt-0.5">${d.note || '—'}</dd></div>
+      <div class="flex items-baseline justify-between border-t border-border pt-3">
+        <dt class="text-[13px] text-muted">${d.sl} cuốn · ${NHAN_PT[d.pt]}</dt>
+        <dd class="text-lg font-semibold text-primary">${tien(d.tong)}</dd>
+      </div>
+    </dl>
+    <div class="mt-5 grid gap-2 border-t border-border pt-4">
+      <p class="text-[13px] font-medium">Chuyển trạng thái</p>
+      <div class="flex flex-wrap gap-2">${btnChinh('Xác nhận', 'check')}${btnPhu('Huỷ đơn', 'x')}</div>
+      <p class="text-[12px] text-muted">Chỉ hiện bước hợp lệ theo luồng đơn hàng.</p>
+    </div>
+    <div class="mt-4 grid gap-2 border-t border-border pt-4">
+      ${btnPhu('Gọi khách ' + d.sdt, 'phone')}
+    </div>
+  </aside>`;
+}
+
+function donA(bien) {
+  let than;
+  if (S.tt === 'rong') than = khoiRong();
+  else if (S.tt === 'loi') than = khoiLoi();
+  else if (S.tt === 'dang-tai') than = khoiTai();
+  else than = `<div class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">${bangDon(bien || 'a')}${panelChiTiet(bien)}</div>`;
+
+  return khungAdmin(`
+    <div data-wf-block="24" class="flex flex-wrap items-end justify-between gap-3">
+      <div><h1 class="font-display text-2xl">Đơn đặt hàng</h1><p class="mt-1 text-[14px] text-muted">2 đơn quá hạn xử lý · 24 đơn tất cả</p></div>
+      ${btnPhu('Xuất Excel', 'download')}
+    </div>
+    ${thanhLoc()}
+    ${than}`);
+}
+
+function donB() {
+  let than;
+  if (S.tt === 'rong') than = khoiRong();
+  else if (S.tt === 'loi') than = khoiLoi();
+  else if (S.tt === 'dang-tai') than = khoiTai();
+  else than = bangDon('b');
+  return khungAdmin(`
+    <div data-wf-block="24" class="flex flex-wrap items-end justify-between gap-3">
+      <div><h1 class="font-display text-2xl">Đơn đặt hàng</h1><p class="mt-1 text-[14px] text-muted">2 đơn quá hạn xử lý · 24 đơn tất cả</p></div>
+      ${btnPhu('Xuất Excel', 'download')}
+    </div>
+    ${thanhLoc()}
+    ${than}
+    <p class="text-[13px] text-muted">Bấm một dòng để mở chi tiết trong modal.</p>`);
+}
+
+function donC() {
+  const nhom = [
+    ['Cần xử lý ngay', DON.filter(quaHan)],
+    ['Mới', DON.filter(d => d.tt === 'New' && !quaHan(d))],
+    ['Đang chạy', DON.filter(d => ['Confirmed','Shipping'].includes(d.tt))],
+    ['Đã xong', DON.filter(d => ['Completed','Cancelled'].includes(d.tt))],
+  ];
+  let than;
+  if (S.tt === 'rong') than = khoiRong();
+  else if (S.tt === 'loi') than = khoiLoi();
+  else if (S.tt === 'dang-tai') than = khoiTai();
+  else than = `<div data-wf-block="25" class="grid gap-4">
+    ${nhom.map(([ten, ds]) => `
+      <section class="rounded-card border border-border bg-surface">
+        <h2 class="flex items-center gap-2 border-b border-border px-4 py-2.5 text-[14px] font-medium">${ten}<span class="rounded-full bg-background px-1.5 text-[12px] text-muted">${ds.length}</span></h2>
+        ${ds.length === 0 ? `<p class="px-4 py-6 text-center text-[14px] text-muted">Không có đơn nào</p>` : `
+        <ul class="divide-y divide-border">
+          ${ds.map(d => `
+            <li class="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3 hover:bg-background">
+              <span class="font-medium">${d.ma}</span>
+              <span class="min-w-0 flex-1 truncate">${d.ten} · ${d.sdt}</span>
+              <span class="tabular-nums font-medium">${tien(d.tong)}</span>
+              <span class="text-[13px] text-muted whitespace-nowrap">${gioNgan(d.gio)}</span>
+              ${badgeTT(d)}
+            </li>`).join('')}
+        </ul>`}
+      </section>`).join('')}
+  </div>`;
+  return khungAdmin(`
+    <div data-wf-block="24"><h1 class="font-display text-2xl">Đơn đặt hàng</h1><p class="mt-1 text-[14px] text-muted">Nhóm theo việc cần làm</p></div>
+    ${thanhLoc()}
+    ${than}`);
+}
+
+// ---------------------------------------------------------------- lý do
+const LY_DO = {
+  landing: {
+    a: ['Việc chính (đặt mua) thấy ở: màn đầu, khối CTA giữa trang (9), form cuối trang (4), và thanh dính đáy trên mobile (11).',
+        'Đổi so với bản cũ: thêm CTA lặp giữa trang và thanh dính đáy — bản cũ chỉ có nút ở Hero rồi mất hút tới cuối trang.',
+        'Đánh đổi: trang dài, desktop phải cuộn mới tới form. Thanh dính đáy ăn 64px chiều cao màn mobile.'],
+    b: ['Việc chính thấy ở: hộp mua dính bên phải, luôn hiện suốt trang (12).',
+        'Đổi so với bản cũ: chia hai cột từ 1024px, ảnh + giá + nút tách khỏi Hero thành hộp mua riêng.',
+        'Đánh đổi: hộp mua chiếm 360px nên nội dung còn ~900px ở 1280. Mobile sập về một cột, hộp mua nhảy lên đầu nên phải cuộn qua nó mới đọc được nội dung.'],
+    c: ['Việc chính thấy ở: form đặt hàng nằm ngay màn đầu (4), không phải cuộn.',
+        'Đổi so với bản cũ: form từ cuối trang dời lên Hero; phần còn lại của trang thành lý do tin tưởng đọc sau.',
+        'Đánh đổi: màn đầu nặng, khách chưa biết sách là gì đã thấy ô nhập. Mobile thì form đẩy nội dung giới thiệu xuống rất sâu.'],
+  },
+  'don-hang': {
+    a: ['Việc chính (gọi khách, đổi trạng thái) thấy ở: panel phải (23) — đủ địa chỉ, ghi chú, nút gọi và nút chuyển trạng thái, không cần mở trang khác.',
+        'Đổi so với bản cũ: bảng còn 5 cột (mã, khách, tổng, trạng thái, ngày) — địa chỉ, số lượng, thanh toán dời sang panel, nhờ vậy vừa khung 664px không cuộn ngang; mobile đổi hẳn sang danh sách thẻ; thêm nhóm "Quá hạn xử lý", badge đỏ cho đơn Mới để quá 4 giờ.',
+        'Đánh đổi: sidebar 232px + panel 320px nên bảng chỉ còn ~664px ở 1280 — phải bỏ 3 cột. Muốn so sánh theo số lượng hay hình thức thanh toán thì phải mở từng đơn. Dưới 1280 panel rớt xuống dưới bảng.'],
+    b: ['Việc chính thấy ở: bảng đầy đủ, đổi trạng thái qua modal.',
+        'Đổi so với bản cũ: giữ nguyên mọi cột, chỉ thêm cột mã đơn dính và badge quá hạn.',
+        'Đánh đổi: vẫn cuộn ngang ở 1280. Muốn xem địa chỉ đầy đủ phải mở modal, mà modal che mất bảng.'],
+    c: ['Việc chính thấy ở: nhóm "Cần xử lý ngay" nằm trên cùng, không phải lọc mới thấy.',
+        'Đổi so với bản cũ: bỏ bảng, chuyển thành danh sách nhóm theo việc cần làm.',
+        'Đánh đổi: mất khả năng so sánh theo cột (không sắp xếp theo tổng tiền được). Nhiều đơn thì trang rất dài. Cần thêm logic nhóm — bạn nối.'],
+  },
+};
+const LY_DO_DE = {
+  landing: {
+    d: ['Biến thể nội dung của A. Mỗi khối chỉ giữ thứ dùng để quyết định mua: giá, sao, ai viết.',
+        'Bỏ: khối "Về cuốn sách" dạng bảng hai ô, dòng meta lặp.',
+        'Đánh đổi: khách muốn đọc kỹ phải bấm thêm.'],
+    e: ['Biến thể nội dung của A. Mỗi thông tin chỉ xuất hiện MỘT chỗ.',
+        'Bỏ lặp: giá hiện ở Hero và thanh dính đáy chứ không hiện thêm ở khối CTA giữa trang; điểm sao chỉ ở khối đánh giá.',
+        'Đánh đổi: khối CTA giữa trang nhạt hơn vì không nhắc giá.'],
+  },
+  'don-hang': {
+    d: ['Biến thể nội dung của A, gọn chữ: bảng còn 4 cột — ngày đặt gộp xuống dòng dưới số điện thoại thay vì chiếm một cột riêng.',
+        'Đổi: mỗi dòng tối đa 2 dòng chữ, bảng rộng rãi hơn hẳn.',
+        'Đánh đổi: không sắp xếp theo ngày bằng cách bấm tiêu đề cột được nữa.'],
+    e: ['Biến thể nội dung của A, bỏ lặp: panel KHÔNG nhắc lại tên và SĐT đã có ở dòng đang chọn.',
+        'Đổi: panel chỉ chứa thứ bảng không có (địa chỉ, ghi chú, nút hành động).',
+        'Đánh đổi: dòng đang chọn phải luôn nhìn thấy; cuộn bảng xuống là mất ngữ cảnh.'],
+  },
+};
+const KHUYEN = { landing: 'a', 'don-hang': 'a' };
+
+// ---------------------------------------------------------------- vẽ
+function veLyDo() {
+  const bien = ['d','e'].includes(S.v);
+  const ds = bien ? LY_DO_DE[S.man][S.v] : LY_DO[S.man][S.v];
+  const laKhuyen = !bien && S.v === KHUYEN[S.man];
+  const ten = bien ? `Biến thể ${S.v.toUpperCase()}` : `Phương án ${S.v.toUpperCase()}`;
+  document.getElementById('ly-do').innerHTML = `
+    <div class="rounded-card border border-border-strong bg-surface p-4">
+      <p class="flex flex-wrap items-center gap-2 font-medium">
+        ${ten}
+        ${laKhuyen ? `<span class="rounded-full bg-primary px-2 py-0.5 text-[12px] font-semibold text-primary-foreground">Khuyên dùng</span>` : ''}
+      </p>
+      <ul class="mt-2 grid gap-1 text-[14px] text-muted">
+        ${ds.map((t,i) => `<li class="flex gap-2"><i data-lucide="${['target','replace','scale'][i]}" class="mt-0.5 size-4 shrink-0"></i><span>${t}</span></li>`).join('')}
+      </ul>
+    </div>`;
+}
+
+function veSan() {
+  const el = document.getElementById('san');
+  if (S.kho === 'mobile' && !S.frame) {
+    const p = new URLSearchParams(location.search);
+    p.set('frame','1'); p.set('kho','desktop');
+    el.innerHTML = `<div class="grid place-items-center py-4">
+      <div class="overflow-hidden rounded-[28px] border-[10px] border-foreground/85 shadow-modal">
+        <iframe src="?${p}" width="375" height="812" class="block bg-background"></iframe>
+      </div>
+      <p class="mt-3 text-[13px] text-muted">375 × 812 — media query chạy thật</p>
+    </div>`;
+    return;
+  }
+  const bien = ['d','e'].includes(S.v) ? S.v : null;
+  const v = bien ? KHUYEN[S.man] : S.v;
+  if (S.man === 'landing') {
+    el.innerHTML = v === 'a' ? landingA() : v === 'b' ? landingB() : landingC();
+  } else {
+    el.innerHTML = v === 'a' ? donA(bien) : v === 'b' ? donB() : donC();
+  }
+}
+
+function veNut() {
+  document.querySelectorAll('[data-set]').forEach(b => {
+    const k = b.dataset.set, val = b.dataset.val;
+    b.setAttribute('aria-pressed', String(S[k] === val));
+    b.onclick = () => go(k, val);
+  });
+  document.getElementById('toggle-so').onclick = () => go('so', S.so ? '0' : '1');
+  document.getElementById('toggle-so').textContent = S.so ? 'Ẩn số khối' : 'Hiện số khối';
+  // Trạng thái chỉ có nghĩa ở màn đơn hàng
+  document.querySelectorAll('[data-set="tt"]').forEach(b => b.disabled = S.man === 'landing');
+}
+
+/** Số khối không được đè chữ/icon nằm ngay góc trên trái của khối.
+ *  elementFromPoint một điểm là chưa đủ: chữ có thể bắt đầu lệch vài px khỏi điểm đo.
+ *  Đo thẳng hình chữ nhật của huy hiệu rồi so với hình chữ nhật của từng đoạn chữ con. */
+function placeBlockNumbers() {
+  const RONG = 22, CAO = 15;
+  document.querySelectorAll('[data-wf-block]').forEach(el => {
+    el.removeAttribute('data-wf-block-out');
+    const r = el.getBoundingClientRect();
+    const huyHieu = { l: r.left, t: r.top, r: r.left + RONG, b: r.top + CAO };
+
+    const giao = (b) => b.width > 0 && b.height > 0
+      && b.left < huyHieu.r && b.right > huyHieu.l
+      && b.top < huyHieu.b && b.bottom > huyHieu.t;
+
+    let de = false;
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+    for (let n = walker.nextNode(); n && !de; n = walker.nextNode()) {
+      if (!n.nodeValue.trim()) continue;
+      const rg = document.createRange();
+      rg.selectNodeContents(n);
+      for (const b of rg.getClientRects()) if (giao(b)) { de = true; break; }
+    }
+    if (!de) {
+      for (const svg of el.querySelectorAll('svg, img')) {
+        if (giao(svg.getBoundingClientRect())) { de = true; break; }
+      }
+    }
+    if (de) el.setAttribute('data-wf-block-out', '');
+  });
+}
+
+document.documentElement.dataset.mau = S.mau;
+if (!S.so) document.body.classList.add('wf-plain');
+if (S.frame) document.getElementById('bar').remove(), document.getElementById('ly-do').remove();
+veNut(); veLyDo(); veSan();
+
+// createIcons() chỉ thay <i data-lucide> có lúc gọi. Phải có điều kiện i[data-lucide],
+// vì svg vẽ xong vẫn mang data-lucide — gọi thẳng trong observer là treo trang.
+new MutationObserver(() => { if (document.querySelector('i[data-lucide]')) lucide.createIcons(); })
+  .observe(document.body, { childList: true, subtree: true });
+lucide.createIcons();
+requestAnimationFrame(placeBlockNumbers);
+addEventListener('resize', placeBlockNumbers);
+</script>
+</body>
+</html>

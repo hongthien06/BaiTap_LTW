@@ -6,7 +6,9 @@ test.describe('Luồng đặt hàng', () => {
   test('đặt hàng thành công hiện mã đơn và reset form', async ({ page }) => {
     await page.goto('/')
 
-    await page.getByRole('button', { name: 'Đặt mua ngay' }).click()
+    // Nut nay co o ca Hero lan khoi CTA giua trang (co y: CTA phai lap lai),
+    // nen phai chi ro dang bam cai nao.
+    await page.getByRole('button', { name: 'Đặt mua ngay' }).first().click()
 
     // Gioi han vao dung section dat hang: nhan "Ho ten" cung xuat hien o form danh gia.
     const orderForm = page.getByRole('region', { name: 'Đặt mua sách' })

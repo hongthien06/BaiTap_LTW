@@ -1,24 +1,22 @@
 import type { ContentReview } from '../../api/types'
 import { safeHref } from '../../lib/url'
+import { Button } from '../ui/Button'
+import { Section } from '../ui/Section'
 
 export function ReviewSection({ review }: { review: ContentReview }) {
-  return (
-    <section id="review" className="bg-white py-16" aria-labelledby="review-title">
-      <div className="mx-auto max-w-4xl px-4">
-        <h2 id="review-title" className="font-display text-3xl">{review.title}</h2>
-        <p className="mt-6 whitespace-pre-line text-lg leading-relaxed text-ink/80">{review.content}</p>
+  const fileHref = safeHref(review.fileUrl)
 
-        {safeHref(review.fileUrl) && (
-          <a
-            href={safeHref(review.fileUrl)}
-            download
-            className="mt-8 inline-block rounded-full border-2 border-gold px-6 py-2 font-semibold text-gold-dark transition hover:bg-gold hover:text-ink"
-            data-testid="review-download"
-          >
-            Tải bản review (PDF)
-          </a>
-        )}
-      </div>
-    </section>
+  return (
+    <Section id="review" title={review.title}>
+      <p className="max-w-prose whitespace-pre-line text-lg leading-relaxed text-muted">
+        {review.content}
+      </p>
+
+      {fileHref && (
+        <a href={fileHref} download className="mt-6 inline-block" data-testid="review-download">
+          <Button variant="outline" type="button" tabIndex={-1}>Tải bản review (PDF)</Button>
+        </a>
+      )}
+    </Section>
   )
 }

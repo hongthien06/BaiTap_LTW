@@ -4,24 +4,27 @@ interface Props {
   onChange?: (value: number) => void
 }
 
+const STARS = [1, 2, 3, 4, 5]
+
 /** Hien thi hoac chon so sao 1-5. Co onChange thi thanh input, khong thi chi de doc. */
 export function StarRating({ value, size = 'sm', onChange }: Props) {
-  const stars = [1, 2, 3, 4, 5]
-  const className = size === 'md' ? 'text-3xl' : 'text-lg'
+  const cls = size === 'md' ? 'text-3xl' : 'text-lg'
 
   if (!onChange) {
     return (
-      <span className={`${className} text-gold`} aria-label={`${value} trên 5 sao`}>
-        {stars.map((star) => (
-          <span key={star} aria-hidden="true">{star <= Math.round(value) ? '★' : '☆'}</span>
+      <span className={`${cls} whitespace-nowrap text-primary`} aria-label={`${value} trên 5 sao`}>
+        {STARS.map((star) => (
+          <span key={star} aria-hidden="true" className={star <= Math.round(value) ? '' : 'text-foreground/25'}>
+            ★
+          </span>
         ))}
       </span>
     )
   }
 
   return (
-    <span role="radiogroup" aria-label="Chọn số sao" className={className}>
-      {stars.map((star) => (
+    <span role="radiogroup" aria-label="Chọn số sao" className={`${cls} whitespace-nowrap`}>
+      {STARS.map((star) => (
         <button
           key={star}
           type="button"
@@ -29,7 +32,7 @@ export function StarRating({ value, size = 'sm', onChange }: Props) {
           aria-checked={value === star}
           aria-label={`${star} sao`}
           onClick={() => onChange(star)}
-          className={star <= value ? 'text-gold' : 'text-ink/25'}
+          className={`rounded px-0.5 ${star <= value ? 'text-primary' : 'text-foreground/25'}`}
         >
           ★
         </button>

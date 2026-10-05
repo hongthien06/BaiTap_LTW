@@ -3,15 +3,17 @@ import { useEffect } from 'react'
 import { getErrorMessage } from '../../api/client'
 import { publicApi } from '../../api/endpoints'
 import type { LandingResponse } from '../../api/types'
-import { effectivePrice } from '../../lib/format'
 import { AuthorSection } from '../../components/landing/AuthorSection'
 import { BookInfoSection } from '../../components/landing/BookInfoSection'
+import { CtaBanner } from '../../components/landing/CtaBanner'
 import { FeedbackSection } from '../../components/landing/FeedbackSection'
 import { HeroSection } from '../../components/landing/HeroSection'
 import { OrderFormSection } from '../../components/landing/OrderFormSection'
 import { PressSection } from '../../components/landing/PressSection'
 import { ReviewSection } from '../../components/landing/ReviewSection'
 import { SiteFooter } from '../../components/landing/SiteFooter'
+import { StickyBuyBar } from '../../components/landing/StickyBuyBar'
+import { effectivePrice } from '../../lib/format'
 
 export function LandingPage() {
   const { data, isPending, error } = useQuery({
@@ -31,40 +33,69 @@ export function LandingPage() {
     setStructuredData(data)
   }, [data])
 
-  if (isPending) {
-    return <p className="p-10 text-center text-ink/60">Đang tải...</p>
-  }
+  if (isPending) return <LoadingSkeleton />
 
   if (error || !data) {
     return (
-      <div className="p-10 text-center">
-        <p className="text-red-600" role="alert">{getErrorMessage(error, 'Chưa có dữ liệu sách để hiển thị.')}</p>
+      <div className="mx-auto max-w-2xl px-4 py-24 text-center">
+        <h1 className="font-display text-2xl">Chưa hiển thị được trang</h1>
+        <p className="mt-3 text-muted" role="alert">
+          {getErrorMessage(error, 'Chưa có dữ liệu sách để hiển thị.')}
+        </p>
       </div>
     )
   }
 
-  const scrollToOrder = () => document.getElementById('dat-hang')?.scrollIntoView({ behavior: 'smooth' })
+  const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
+  const toOrder = () => scrollTo('dat-hang')
 
   return (
-    <>
-      <HeroSection book={data.book} onOrderClick={scrollToOrder} />
+    <div className="mx-auto grid max-w-6xl gap-4 px-4 py-4 md:gap-5 md:py-8">
+      <HeroSection
+        book={data.book}
+        average={data.ratingSummary.average}
+        reviewCount={data.ratingSummary.count}
+        onOrderClick={toOrder}
+        onReviewClick={() => scrollTo('review')}
+      />
+
       <BookInfoSection book={data.book} />
+
+      <CtaBanner price={effectivePrice(data.book.price, data.book.discountPrice)} onOrderClick={toOrder} />
+
       {data.author && <AuthorSection author={data.author} />}
       <PressSection quotes={data.pressQuotes} />
       {data.review && <ReviewSection review={data.review} />}
+
       <FeedbackSection summary={data.ratingSummary} feedbacks={data.feedbacks} />
+
       <OrderFormSection book={data.book} bankInfo={data.settings['payment.bankInfo']} />
+
       <SiteFooter settings={data.settings} />
-    </>
+
+      <StickyBuyBar book={data.book} onOrderClick={toOrder} />
+    </div>
   )
 }
 
-/** Title dai qua 60 ky tu bi Google cat; subtitle cua sach co the toi 500 ky tu. */
+/** Khung chờ đúng hình các khối thật, để trang không nhảy khi dữ liệu về. */
+function LoadingSkeleton() {
+  return (
+    <div className="mx-auto grid max-w-6xl gap-4 px-4 py-4 md:py-8" aria-busy="true" aria-label="Đang tải">
+      <div className="h-[420px] animate-pulse rounded-card border border-border bg-surface" />
+      <div className="h-56 animate-pulse rounded-card border border-border bg-surface" />
+      <div className="h-32 animate-pulse rounded-card border border-border bg-surface" />
+      <div className="h-72 animate-pulse rounded-card border border-border bg-surface" />
+    </div>
+  )
+}
+
+/** Title dài quá 60 ký tự bị Google cắt; subtitle của sách có thể tới 500 ký tự. */
 function truncate(text: string, max: number) {
   return text.length <= max ? text : `${text.slice(0, max - 1).trimEnd()}…`
 }
 
-/** NFR-7: JSON-LD schema.org Book + AggregateRating de ket qua tim kiem hien sao va gia. */
+/** NFR-7: JSON-LD schema.org Book + AggregateRating. */
 function setStructuredData(data: LandingResponse) {
   const jsonLd: Record<string, unknown> = {
     '@context': 'https://schema.org',
@@ -82,7 +113,6 @@ function setStructuredData(data: LandingResponse) {
     },
   }
 
-  // Google tu choi AggregateRating khong co danh gia nao - chi chen khi thuc su co du lieu.
   if (data.ratingSummary.count > 0) {
     jsonLd.aggregateRating = {
       '@type': 'AggregateRating',

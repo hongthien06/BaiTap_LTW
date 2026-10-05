@@ -1,63 +1,85 @@
 import type { Book } from '../../api/types'
 import { discountPercent, effectivePrice, formatPrice, hasDiscount } from '../../lib/format'
+import { Button } from '../ui/Button'
+import { StarRating } from './StarRating'
 
 interface Props {
   book: Book
+  average: number
+  reviewCount: number
   onOrderClick: () => void
+  onReviewClick: () => void
 }
 
-export function HeroSection({ book, onOrderClick }: Props) {
+export function HeroSection({ book, average, reviewCount, onOrderClick, onReviewClick }: Props) {
   const showDiscount = hasDiscount(book.price, book.discountPrice)
   const sellPrice = effectivePrice(book.price, book.discountPrice)
 
   return (
-    <section className="bg-ink text-sand" aria-labelledby="hero-title">
-      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-16 md:grid-cols-2 md:items-center md:py-24">
+    <section
+      aria-labelledby="hero-title"
+      className="rounded-card border border-border bg-surface px-6 py-10 md:px-10 md:py-14"
+    >
+      <div className="grid items-center gap-10 md:grid-cols-[1fr_minmax(0,300px)]">
         <div className="order-2 md:order-1">
-          <p className="mb-3 text-sm uppercase tracking-[0.2em] text-gold">{book.category}</p>
+          <p className="text-[13px] font-medium uppercase tracking-[0.18em] text-primary">
+            {book.category}
+          </p>
 
-          <h1 id="hero-title" className="font-display text-4xl leading-tight md:text-5xl">
+          <h1 id="hero-title" className="mt-3 font-display text-4xl leading-[1.12] md:text-5xl">
             {book.title}
           </h1>
 
-          <p className="mt-5 text-lg text-sand/80">{book.subtitle}</p>
+          <p className="mt-4 max-w-prose text-lg text-muted">{book.subtitle}</p>
 
-          <div className="mt-8 flex flex-wrap items-baseline gap-3">
-            <span className="text-3xl font-semibold text-gold" data-testid="sell-price">
+          <div className="mt-6 flex flex-wrap items-baseline gap-3">
+            <span className="text-4xl font-semibold text-primary" data-testid="sell-price">
               {formatPrice(sellPrice)}
             </span>
 
             {showDiscount && (
               <>
-                <s className="text-lg text-sand/50" data-testid="original-price">
+                <s className="text-lg text-muted" data-testid="original-price">
                   {formatPrice(book.price)}
                 </s>
-                <span className="rounded-full bg-gold px-3 py-1 text-sm font-semibold text-ink" data-testid="discount-badge">
+                <span
+                  className="rounded-full bg-primary px-2.5 py-0.5 text-[13px] font-semibold text-primary-foreground"
+                  data-testid="discount-badge"
+                >
                   -{discountPercent(book.price, book.discountPrice)}%
                 </span>
               </>
             )}
           </div>
 
-          <button
-            type="button"
-            onClick={onOrderClick}
-            className="mt-8 rounded-full bg-gold px-8 py-3 font-semibold text-ink transition hover:bg-gold-dark"
-          >
-            Đặt mua ngay
-          </button>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Button size="lg" onClick={onOrderClick}>Đặt mua ngay</Button>
+            <Button size="lg" variant="outline" onClick={onReviewClick}>Đọc thử</Button>
+          </div>
+
+          {reviewCount > 0 && (
+            <p className="mt-5 flex flex-wrap items-center gap-2 text-[14px] text-muted">
+              <StarRating value={average} />
+              <span className="font-medium text-foreground">{average.toFixed(1)}/5</span>
+              <span>từ {reviewCount} đánh giá</span>
+              <span aria-hidden="true">·</span>
+              <span>Giao toàn quốc</span>
+            </p>
+          )}
         </div>
 
-        <div className="order-1 flex justify-center md:order-2">
+        <div className="order-1 md:order-2">
           {book.mockupImageUrl ? (
             <img
               src={book.mockupImageUrl}
               alt={`Ảnh bìa sách ${book.name}`}
-              className="w-64 max-w-full drop-shadow-2xl md:w-80"
+              className="mx-auto w-full max-w-[280px]"
               loading="eager"
+              width={280}
+              height={420}
             />
           ) : (
-            <div className="flex h-80 w-56 items-center justify-center rounded border border-sand/20 text-sand/40">
+            <div className="mx-auto grid aspect-2/3 w-full max-w-[280px] place-items-center rounded-card border border-border-strong text-muted">
               Chưa có ảnh
             </div>
           )}

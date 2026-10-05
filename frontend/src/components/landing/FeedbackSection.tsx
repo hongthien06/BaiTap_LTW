@@ -7,9 +7,11 @@ import { getErrorMessage } from '../../api/client'
 import { publicApi } from '../../api/endpoints'
 import type { Feedback, RatingSummary } from '../../api/types'
 import { formatDateTime } from '../../lib/format'
+import { Button } from '../ui/Button'
+import { Section } from '../ui/Section'
 import { StarRating } from './StarRating'
 
-// Phai khop CreateFeedbackRequestValidator o backend. Backend van la nguon chan ly.
+// Phải khớp CreateFeedbackRequestValidator ở backend. Backend vẫn là nguồn chân lý.
 const schema = z.object({
   customerName: z.string().trim().min(2, 'Tên phải có ít nhất 2 ký tự').max(200, 'Tên tối đa 200 ký tự'),
   rating: z.number().int().min(1, 'Vui lòng chọn số sao').max(5),
@@ -46,79 +48,88 @@ export function FeedbackSection({ summary, feedbacks }: Props) {
   })
 
   return (
-    <section id="danh-gia" className="mx-auto max-w-6xl px-4 py-16" aria-labelledby="feedback-title">
-      <h2 id="feedback-title" className="font-display text-3xl">Độc giả nói gì</h2>
-
-      <p className="mt-3 flex items-center gap-3" data-testid="rating-summary">
-        <StarRating value={summary.average} />
-        <span className="font-semibold">{summary.average.toFixed(1)}/5</span>
-        <span className="text-ink/60">({summary.count} đánh giá)</span>
-      </p>
-
-      <div className="mt-8 grid gap-10 md:grid-cols-2">
-        <ul className="space-y-4" data-testid="feedback-list">
-          {feedbacks.length === 0 && <li className="text-ink/60">Chưa có đánh giá nào được duyệt.</li>}
+    <Section
+      id="danh-gia"
+      title="Độc giả nói gì"
+      aside={
+        <p className="flex flex-wrap items-center gap-2" data-testid="rating-summary">
+          <StarRating value={summary.average} />
+          <span className="font-semibold">{summary.average.toFixed(1)}/5</span>
+          <span className="text-muted">({summary.count} đánh giá)</span>
+        </p>
+      }
+    >
+      <div className="grid gap-8 lg:grid-cols-2">
+        <ul className="grid content-start gap-3" data-testid="feedback-list">
+          {feedbacks.length === 0 && (
+            <li className="rounded-lg border border-dashed border-border-strong p-6 text-center text-muted">
+              Chưa có đánh giá nào được duyệt. Bạn là người đầu tiên?
+            </li>
+          )}
 
           {feedbacks.map((feedback) => (
-            <li key={feedback.id} className="rounded-lg bg-white p-5 shadow-sm">
-              <div className="flex items-center justify-between">
-                <span className="font-semibold">{feedback.customerName}</span>
-                <StarRating value={feedback.rating} />
+            <li key={feedback.id} className="rounded-lg border border-border p-4">
+              <div className="flex items-start justify-between gap-3">
+                {/* min-w-0 + break-words: tên dài (ví dụ "Nguyễn Hoàng Anh Tuấn Kiệt") từng
+                    đẩy cả trang rộng ra 386px trên màn 375px vì flex item không co được. */}
+                <span className="min-w-0 flex-1 font-medium break-words">{feedback.customerName}</span>
+                <span className="shrink-0"><StarRating value={feedback.rating} /></span>
               </div>
-              {/* React tu escape chuoi nay -> noi dung doc hai hien thi dang text thuan (AC-16). */}
-              <p className="mt-2 text-ink/80">{feedback.content}</p>
-              <p className="mt-2 text-xs text-ink/50">{formatDateTime(feedback.createdAt)}</p>
+
+              {/* React tự escape chuỗi này -> nội dung độc hại hiển thị dạng text thuần. */}
+              <p className="mt-2 text-muted">{feedback.content}</p>
+              <p className="mt-2 text-[13px] text-muted">{formatDateTime(feedback.createdAt)}</p>
             </li>
           ))}
         </ul>
 
         <form
           onSubmit={handleSubmit((values) => mutation.mutate(values))}
-          className="h-fit rounded-lg bg-white p-6 shadow-sm"
+          className="h-fit rounded-lg border border-border bg-background p-5"
           noValidate
         >
           <h3 className="font-display text-xl">Gửi đánh giá của bạn</h3>
 
-          <label className="mt-4 block text-sm font-medium" htmlFor="feedback-name">Họ tên</label>
-          <input
-            id="feedback-name"
-            {...register('customerName')}
-            className="mt-1 w-full rounded border border-ink/20 px-3 py-2"
-          />
+          <label className="mt-4 block">
+            <span className="mb-1.5 block text-[13px] font-medium">Họ tên</span>
+            <input
+              {...register('customerName')}
+              className="h-11 w-full rounded-lg border border-border-strong bg-surface px-3 placeholder:text-muted"
+            />
+          </label>
           {formState.errors.customerName && (
-            <p className="mt-1 text-sm text-red-600">{formState.errors.customerName.message}</p>
+            <p className="mt-1.5 text-[13px] text-danger">{formState.errors.customerName.message}</p>
           )}
 
-          <span className="mt-4 block text-sm font-medium">Số sao</span>
-          <Controller
-            control={control}
-            name="rating"
-            render={({ field }) => <StarRating value={field.value} size="md" onChange={field.onChange} />}
-          />
+          <div className="mt-4">
+            <span className="mb-1.5 block text-[13px] font-medium">Số sao</span>
+            <Controller
+              control={control}
+              name="rating"
+              render={({ field }) => <StarRating value={field.value} size="md" onChange={field.onChange} />}
+            />
+          </div>
 
-          <label className="mt-4 block text-sm font-medium" htmlFor="feedback-content">Nội dung</label>
-          <textarea
-            id="feedback-content"
-            rows={4}
-            {...register('content')}
-            className="mt-1 w-full rounded border border-ink/20 px-3 py-2"
-          />
+          <label className="mt-4 block">
+            <span className="mb-1.5 block text-[13px] font-medium">Nội dung</span>
+            <textarea
+              rows={4}
+              {...register('content')}
+              className="w-full rounded-lg border border-border-strong bg-surface px-3 py-2 placeholder:text-muted"
+            />
+          </label>
           {formState.errors.content && (
-            <p className="mt-1 text-sm text-red-600">{formState.errors.content.message}</p>
+            <p className="mt-1.5 text-[13px] text-danger">{formState.errors.content.message}</p>
           )}
 
-          <button
-            type="submit"
-            disabled={mutation.isPending}
-            className="mt-5 rounded-full bg-ink px-6 py-2 font-semibold text-sand disabled:opacity-60"
-          >
+          <Button type="submit" variant="outline" className="mt-5 w-full" disabled={mutation.isPending}>
             {mutation.isPending ? 'Đang gửi...' : 'Gửi đánh giá'}
-          </button>
+          </Button>
 
-          {sent && <p className="mt-3 text-sm text-green-700" role="status">{sent}</p>}
-          {error && <p className="mt-3 text-sm text-red-600" role="alert">{error}</p>}
+          {sent && <p className="mt-3 text-[14px] text-success" role="status">{sent}</p>}
+          {error && <p className="mt-3 text-[14px] text-danger" role="alert">{error}</p>}
         </form>
       </div>
-    </section>
+    </Section>
   )
 }

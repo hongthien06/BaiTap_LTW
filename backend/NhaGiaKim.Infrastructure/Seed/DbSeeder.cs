@@ -50,7 +50,7 @@ public static class DbSeeder
         {
             Email = DefaultAdminEmail,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(password, workFactor: 12),
-            FullName = "Quan tri vien",
+            FullName = "Quản trị viên",
             RoleId = adminRoleId,
             IsActive = true,
             CreatedAt = DateTime.UtcNow
@@ -62,14 +62,14 @@ public static class DbSeeder
         if (await db.SiteSettings.AnyAsync(ct)) return;
 
         db.SiteSettings.AddRange(
-            new SiteSetting { Key = "site.logo", Value = "/img/logo.svg", Description = "Logo hien o header/footer" },
-            new SiteSetting { Key = "contact.hotline", Value = "1900 1234", Description = "So hotline" },
-            new SiteSetting { Key = "contact.email", Value = "lienhe@nhagiakim.local", Description = "Email lien he" },
-            new SiteSetting { Key = "contact.address", Value = "123 Duong Sach, Quan 1, TP.HCM", Description = "Dia chi" },
+            new SiteSetting { Key = "site.logo", Value = "/img/logo.svg", Description = "Logo hiện ở header và chân trang" },
+            new SiteSetting { Key = "contact.hotline", Value = "1900 1234", Description = "Số hotline" },
+            new SiteSetting { Key = "contact.email", Value = "lienhe@nhagiakim.local", Description = "Email liên hệ" },
+            new SiteSetting { Key = "contact.address", Value = "123 Đường Sách, Quận 1, TP.HCM", Description = "Địa chỉ" },
             new SiteSetting { Key = "social.facebook", Value = "https://facebook.com", Description = "Link Facebook" },
             new SiteSetting { Key = "social.youtube", Value = "https://youtube.com", Description = "Link YouTube" },
-            new SiteSetting { Key = "footer.text", Value = "(c) 2026 Nha Gia Kim. Bai tap mon Lap trinh Web.", Description = "Dong ban quyen" },
-            new SiteSetting { Key = "payment.bankInfo", Value = "Vietcombank - 0123456789 - NGUYEN VAN A", Description = "Thong tin chuyen khoan" });
+            new SiteSetting { Key = "footer.text", Value = "© 2026 Nhà Giả Kim. Bài tập môn Lập trình Web.", Description = "Dòng bản quyền" },
+            new SiteSetting { Key = "payment.bankInfo", Value = "Vietcombank · 0123456789 · NGUYEN VAN A", Description = "Thông tin chuyển khoản" });
     }
 
     private static async Task SeedBookAsync(AppDbContext db, CancellationToken ct)
@@ -79,12 +79,12 @@ public static class DbSeeder
         var now = DateTime.UtcNow;
         var book = new Book
         {
-            Name = "Nha Gia Kim",
-            Category = "Tieu thuyet / Truyen cam hung",
-            Title = "Nha Gia Kim",
-            Subtitle = "Khi ban khao khat mot dieu gi do, ca vu tru se hop luc giup ban dat duoc dieu do.",
-            Description = "Cau chuyen ve chang trai chan cuu Santiago tren hanh trinh di tim kho bau " +
-                          "va kham pha ra y nghia that su cua van menh ca nhan.",
+            Name = "Nhà Giả Kim",
+            Category = "Tiểu thuyết · Truyền cảm hứng",
+            Title = "Nhà Giả Kim",
+            Subtitle = "Khi bạn khao khát một điều gì đó, cả vũ trụ sẽ hợp lực giúp bạn đạt được điều đó.",
+            Description = "Câu chuyện về chàng trai chăn cừu Santiago trên hành trình đi tìm kho báu " +
+                          "và khám phá ra ý nghĩa thật sự của vận mệnh cá nhân.",
             Price = 89_000m,
             DiscountPrice = 69_000m,
             CoverImageUrl = "/img/book-cover.svg",
@@ -96,24 +96,25 @@ public static class DbSeeder
             {
                 FullName = "Paulo Coelho",
                 AvatarUrl = "/img/author.svg",
-                Bio = "Tieu thuyet gia nguoi Brazil, tac gia cua nhieu dau sach duoc dich ra hon 80 ngon ngu."
+                Bio = "Tiểu thuyết gia người Brazil, tác giả của nhiều đầu sách được dịch ra hơn 80 ngôn ngữ. "
+                      + "Nhà Giả Kim là tác phẩm đưa tên tuổi ông ra thế giới."
             },
             ContentReview = new ContentReview
             {
-                Title = "Review noi dung",
-                Content = "Mot cuon sach ngan nhung dat, phu hop voi nguoi dang di tim huong di cho chinh minh.",
+                Title = "Review nội dung",
+                Content = "Một cuốn sách ngắn nhưng đọng, phù hợp với người đang đi tìm hướng đi cho chính mình.",
                 FileUrl = null
             },
             PressQuotes =
             [
-                new PressQuote { PressName = "Tuoi Tre", Quote = "Mot trong nhung cuon sach ban chay nhat moi thoi dai.", SourceUrl = "https://tuoitre.vn", SortOrder = 1 },
-                new PressQuote { PressName = "Thanh Nien", Quote = "Hanh trinh di tim van menh ca nhan duoc ke lai day cuon hut.", SourceUrl = "https://thanhnien.vn", SortOrder = 2 },
-                new PressQuote { PressName = "VnExpress", Quote = "Cuon sach nen doc it nhat mot lan trong doi.", SourceUrl = "https://vnexpress.net", SortOrder = 3 }
+                new PressQuote { PressName = "Tuổi Trẻ", Quote = "Một trong những cuốn sách bán chạy nhất mọi thời đại.", SourceUrl = "https://tuoitre.vn", SortOrder = 1 },
+                new PressQuote { PressName = "Thanh Niên", Quote = "Hành trình đi tìm vận mệnh cá nhân được kể lại đầy cuốn hút.", SourceUrl = "https://thanhnien.vn", SortOrder = 2 },
+                new PressQuote { PressName = "VnExpress", Quote = "Cuốn sách nên đọc ít nhất một lần trong đời.", SourceUrl = "https://vnexpress.net", SortOrder = 3 }
             ],
             Images =
             [
-                new BookImage { Url = "/img/book-1.svg", Caption = "Bia truoc", SortOrder = 1 },
-                new BookImage { Url = "/img/book-2.svg", Caption = "Bia sau", SortOrder = 2 }
+                new BookImage { Url = "/img/book-1.svg", Caption = "Bìa trước", SortOrder = 1 },
+                new BookImage { Url = "/img/book-2.svg", Caption = "Bìa sau", SortOrder = 2 }
             ]
         };
 

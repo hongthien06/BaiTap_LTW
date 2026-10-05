@@ -13,7 +13,7 @@ test('landing không có horizontal scroll và CTA bấm được', async ({ pag
   // Cho sai so 1px do lam tron cua trinh duyet.
   expect(scrollWidth, `viewport ${testInfo.project.name}`).toBeLessThanOrEqual(clientWidth + 1)
 
-  const cta = page.getByRole('button', { name: 'Đặt mua ngay' })
+  const cta = page.getByRole('button', { name: 'Đặt mua ngay' }).first()
   await expect(cta).toBeVisible()
   await cta.click()
   await expect(page.getByRole('heading', { name: 'Đặt mua sách' })).toBeInViewport()

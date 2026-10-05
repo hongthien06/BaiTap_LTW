@@ -1,35 +1,38 @@
 import type { Book } from '../../api/types'
+import { Section } from '../ui/Section'
 
 export function BookInfoSection({ book }: { book: Book }) {
   return (
-    <section id="thong-tin-sach" className="mx-auto max-w-6xl px-4 py-16" aria-labelledby="book-info-title">
-      <h2 id="book-info-title" className="font-display text-3xl">Về cuốn sách</h2>
+    <Section id="thong-tin-sach" title="Về cuốn sách">
+      <p className="max-w-prose whitespace-pre-line text-lg leading-relaxed text-muted">
+        {book.description}
+      </p>
 
-      <div className="mt-8 grid gap-8 md:grid-cols-[2fr_1fr]">
-        <p className="whitespace-pre-line text-lg leading-relaxed text-ink/80">{book.description}</p>
-
-        <dl className="h-fit rounded-lg bg-white p-6 shadow-sm">
-          <dt className="text-sm text-ink/60">Tên sách</dt>
-          <dd className="mb-4 font-semibold">{book.name}</dd>
-          <dt className="text-sm text-ink/60">Thể loại</dt>
-          <dd className="font-semibold">{book.category}</dd>
-        </dl>
-      </div>
+      <dl className="mt-6 grid gap-3 sm:grid-cols-2">
+        <div className="rounded-lg border border-border p-4">
+          <dt className="text-[13px] text-muted">Tên sách</dt>
+          <dd className="mt-0.5 font-medium">{book.name}</dd>
+        </div>
+        <div className="rounded-lg border border-border p-4">
+          <dt className="text-[13px] text-muted">Thể loại</dt>
+          <dd className="mt-0.5 font-medium">{book.category}</dd>
+        </div>
+      </dl>
 
       {book.images.length > 0 && (
-        <ul className="mt-10 grid grid-cols-2 gap-4 md:grid-cols-4">
+        <ul className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-4">
           {book.images.map((image) => (
             <li key={image.url}>
               <img
                 src={image.url}
                 alt={image.caption ?? book.name}
                 loading="lazy"
-                className="aspect-3/4 w-full rounded object-cover shadow-sm"
+                className="aspect-2/3 w-full rounded-lg border border-border object-cover"
               />
             </li>
           ))}
         </ul>
       )}
-    </section>
+    </Section>
   )
 }

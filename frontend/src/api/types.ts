@@ -40,6 +40,12 @@ export const PAYMENT_METHOD_LABEL: Record<PaymentMethodValue, string> = {
   [PaymentMethod.BankTransfer]: 'Chuyển khoản ngân hàng',
 }
 
+/** Nhãn ngắn cho bảng và panel quản trị — nhãn dài chen mất chỗ của tổng tiền. */
+export const PAYMENT_METHOD_SHORT: Record<PaymentMethodValue, string> = {
+  [PaymentMethod.Cod]: 'COD',
+  [PaymentMethod.BankTransfer]: 'Chuyển khoản',
+}
+
 export interface BookImage {
   url: string
   caption: string | null

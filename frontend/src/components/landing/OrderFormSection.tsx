@@ -5,10 +5,11 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { getErrorMessage } from '../../api/client'
 import { publicApi } from '../../api/endpoints'
-import { PAYMENT_METHOD_LABEL, PaymentMethod, type Book, type CreateOrderResponse } from '../../api/types'
+import { PaymentMethod, type Book, type CreateOrderResponse } from '../../api/types'
 import { effectivePrice, formatPrice } from '../../lib/format'
+import { Button } from '../ui/Button'
 
-// Phai khop CreateOrderRequestValidator o backend.
+// Phải khớp CreateOrderRequestValidator ở backend.
 const schema = z.object({
   customerName: z.string().trim().min(2, 'Họ tên phải có ít nhất 2 ký tự').max(200, 'Họ tên tối đa 200 ký tự'),
   phone: z.string().trim().regex(/^0\d{9}$/, 'Số điện thoại không hợp lệ (10 số, bắt đầu bằng 0)'),
@@ -28,11 +29,13 @@ interface Props {
   bankInfo?: string
 }
 
+const FIELD = 'h-11 w-full rounded-lg border border-border-strong bg-surface px-3 placeholder:text-muted'
+
 export function OrderFormSection({ book, bankInfo }: Props) {
   const [result, setResult] = useState<CreateOrderResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  const { register, handleSubmit, watch, reset, formState } = useForm<FormValues>({
+  const { register, handleSubmit, watch, setValue, reset, formState } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: { customerName: '', phone: '', address: '', quantity: 1, paymentMethod: PaymentMethod.Cod, note: '' },
   })
@@ -42,8 +45,7 @@ export function OrderFormSection({ book, bankInfo }: Props) {
     onSuccess: (data) => {
       setResult(data)
       setError(null)
-      // Reset de F5 khong gui lai don (AC-12).
-      reset()
+      reset() // F5 không gửi lại đơn
     },
     onError: (err) => {
       setError(getErrorMessage(err))
@@ -52,115 +54,181 @@ export function OrderFormSection({ book, bankInfo }: Props) {
   })
 
   const quantity = Number(watch('quantity')) || 0
-  const unitPrice = effectivePrice(book.price, book.discountPrice)
   const paymentMethod = Number(watch('paymentMethod'))
+  const unitPrice = effectivePrice(book.price, book.discountPrice)
+
+  const step = (delta: number) => {
+    const next = Math.min(99, Math.max(1, (Number(watch('quantity')) || 1) + delta))
+    setValue('quantity', next, { shouldValidate: true })
+  }
 
   if (result) {
     return (
-      <section id="dat-hang" className="bg-ink py-16 text-sand" aria-labelledby="order-success-title">
-        <div className="mx-auto max-w-2xl px-4 text-center" data-testid="order-success">
+      <section id="dat-hang" aria-labelledby="order-success-title" className="rounded-card border border-primary bg-primary-light p-8 md:p-12">
+        <div className="mx-auto max-w-xl text-center" data-testid="order-success">
           <h2 id="order-success-title" className="font-display text-3xl">Cảm ơn bạn đã đặt hàng!</h2>
-          <p className="mt-4 text-lg">
+
+          <p className="mt-5 text-lg">
             Mã đơn của bạn là{' '}
-            <strong className="text-gold" data-testid="order-code">{result.orderCode}</strong>
+            <strong className="font-semibold text-primary" data-testid="order-code">{result.orderCode}</strong>
           </p>
-          <p className="mt-2 text-sand/80">
-            Tổng tiền: <strong>{formatPrice(result.totalPrice)}</strong>
+
+          <dl className="mt-6 grid gap-2 rounded-lg border border-border bg-surface p-5 text-left">
+            <div className="flex items-baseline justify-between">
+              <dt className="text-muted">Tổng tiền</dt>
+              <dd className="text-xl font-semibold text-primary">{formatPrice(result.totalPrice)}</dd>
+            </div>
+            <div className="flex items-baseline justify-between">
+              <dt className="text-muted">Đơn giá</dt>
+              <dd>{formatPrice(result.unitPrice)}</dd>
+            </div>
+          </dl>
+
+          <p className="mt-5 text-muted">
+            Chúng tôi sẽ gọi theo số điện thoại bạn cung cấp để xác nhận đơn.
           </p>
-          <p className="mt-4 text-sm text-sand/70">
-            Chúng tôi sẽ liên hệ theo số điện thoại bạn cung cấp để xác nhận đơn.
-          </p>
-          <button
-            type="button"
-            onClick={() => setResult(null)}
-            className="mt-8 rounded-full border border-gold px-6 py-2 font-semibold text-gold"
-          >
+
+          <Button variant="outline" className="mt-7" onClick={() => setResult(null)}>
             Đặt thêm đơn khác
-          </button>
+          </Button>
         </div>
       </section>
     )
   }
 
   return (
-    <section id="dat-hang" className="bg-ink py-16 text-sand" aria-labelledby="order-title">
-      <div className="mx-auto max-w-3xl px-4">
-        <h2 id="order-title" className="font-display text-3xl">Đặt mua sách</h2>
-        <p className="mt-2 text-sand/70">Điền thông tin bên dưới, chúng tôi sẽ gọi xác nhận trước khi giao.</p>
+    <section id="dat-hang" aria-labelledby="order-title" className="rounded-card border border-border bg-surface p-6 md:p-8">
+      <h2 id="order-title" className="font-display text-2xl md:text-3xl">Đặt mua sách</h2>
+      <p className="mt-1 text-muted">Điền thông tin bên dưới, chúng tôi gọi xác nhận trước khi giao.</p>
 
-        <form
-          onSubmit={handleSubmit((values) =>
-            mutation.mutate({
-              customerName: values.customerName,
-              phone: values.phone,
-              address: values.address,
-              quantity: Number(values.quantity),
-              paymentMethod: Number(values.paymentMethod) as 0 | 1,
-              note: values.note || null,
-            }),
+      <form
+        onSubmit={handleSubmit((values) =>
+          mutation.mutate({
+            customerName: values.customerName,
+            phone: values.phone,
+            address: values.address,
+            quantity: Number(values.quantity),
+            paymentMethod: Number(values.paymentMethod) as 0 | 1,
+            note: values.note || null,
+          }),
+        )}
+        className="mt-6 grid max-w-3xl gap-5 sm:grid-cols-2"
+        noValidate
+      >
+        <label className="block">
+          <span className="mb-1.5 block text-[13px] font-medium">Họ tên</span>
+          <input {...register('customerName')} className={FIELD} />
+          {formState.errors.customerName && (
+            <span className="mt-1.5 block text-[13px] text-danger">{formState.errors.customerName.message}</span>
           )}
-          className="mt-8 grid gap-5 md:grid-cols-2"
-          noValidate
-        >
-          <div>
-            <label className="block text-sm font-medium" htmlFor="order-name">Họ tên</label>
-            <input id="order-name" {...register('customerName')} className="mt-1 w-full rounded border border-sand/30 bg-transparent px-3 py-2" />
-            {formState.errors.customerName && <p className="mt-1 text-sm text-red-400">{formState.errors.customerName.message}</p>}
-          </div>
+        </label>
 
-          <div>
-            <label className="block text-sm font-medium" htmlFor="order-phone">Số điện thoại</label>
-            <input id="order-phone" inputMode="tel" {...register('phone')} className="mt-1 w-full rounded border border-sand/30 bg-transparent px-3 py-2" />
-            {formState.errors.phone && <p className="mt-1 text-sm text-red-400">{formState.errors.phone.message}</p>}
-          </div>
-
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium" htmlFor="order-address">Địa chỉ nhận hàng</label>
-            <input id="order-address" {...register('address')} className="mt-1 w-full rounded border border-sand/30 bg-transparent px-3 py-2" />
-            {formState.errors.address && <p className="mt-1 text-sm text-red-400">{formState.errors.address.message}</p>}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium" htmlFor="order-quantity">Số lượng</label>
-            <input id="order-quantity" type="number" min={1} max={99} {...register('quantity')} className="mt-1 w-full rounded border border-sand/30 bg-transparent px-3 py-2" />
-            {formState.errors.quantity && <p className="mt-1 text-sm text-red-400">{formState.errors.quantity.message}</p>}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium" htmlFor="order-payment">Phương thức thanh toán</label>
-            <select id="order-payment" {...register('paymentMethod')} className="mt-1 w-full rounded border border-sand/30 bg-ink px-3 py-2">
-              <option value={PaymentMethod.Cod}>{PAYMENT_METHOD_LABEL[PaymentMethod.Cod]}</option>
-              <option value={PaymentMethod.BankTransfer}>{PAYMENT_METHOD_LABEL[PaymentMethod.BankTransfer]}</option>
-            </select>
-          </div>
-
-          {paymentMethod === PaymentMethod.BankTransfer && bankInfo && (
-            <p className="rounded border border-gold/40 p-3 text-sm text-sand/80 md:col-span-2">
-              Thông tin chuyển khoản: {bankInfo}
-            </p>
+        <label className="block">
+          <span className="mb-1.5 block text-[13px] font-medium">Số điện thoại</span>
+          <input inputMode="tel" {...register('phone')} className={FIELD} />
+          {formState.errors.phone && (
+            <span className="mt-1.5 block text-[13px] text-danger">{formState.errors.phone.message}</span>
           )}
+        </label>
 
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium" htmlFor="order-note">Ghi chú (không bắt buộc)</label>
-            <textarea id="order-note" rows={3} {...register('note')} className="mt-1 w-full rounded border border-sand/30 bg-transparent px-3 py-2" />
+        <label className="block sm:col-span-2">
+          <span className="mb-1.5 block text-[13px] font-medium">Địa chỉ nhận hàng</span>
+          <input {...register('address')} className={FIELD} />
+          {formState.errors.address && (
+            <span className="mt-1.5 block text-[13px] text-danger">{formState.errors.address.message}</span>
+          )}
+        </label>
+
+        {/* htmlFor tường minh: <label> bọc nhiều control thì nó gắn vào control ĐẦU TIÊN
+            (ở đây là nút trừ), ô nhập sẽ mất nhãn. */}
+        <div className="block">
+          <label htmlFor="order-quantity" className="mb-1.5 block text-[13px] font-medium">Số lượng</label>
+          <span className="flex h-11 w-36 items-center rounded-lg border border-border-strong bg-surface">
+            <button
+              type="button"
+              aria-label="Bớt một cuốn"
+              onClick={() => step(-1)}
+              className="grid h-full w-10 place-items-center text-muted hover:text-foreground"
+            >
+              −
+            </button>
+            <input
+              id="order-quantity"
+              type="number"
+              min={1}
+              max={99}
+              {...register('quantity')}
+              className="h-full w-full min-w-0 border-x border-border-strong bg-transparent text-center font-medium [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
+            />
+            <button
+              type="button"
+              aria-label="Thêm một cuốn"
+              onClick={() => step(1)}
+              className="grid h-full w-10 place-items-center text-muted hover:text-foreground"
+            >
+              +
+            </button>
+          </span>
+          {formState.errors.quantity && (
+            <span className="mt-1.5 block text-[13px] text-danger">{formState.errors.quantity.message}</span>
+          )}
+        </div>
+
+        <fieldset className="block">
+          <legend className="mb-1.5 block text-[13px] font-medium">Thanh toán</legend>
+          <div className="flex gap-2">
+            {[PaymentMethod.Cod, PaymentMethod.BankTransfer].map((method) => {
+              const active = paymentMethod === method
+              return (
+                <label
+                  key={method}
+                  className={`flex h-11 flex-1 cursor-pointer items-center gap-2 rounded-lg border px-3 text-[14px] ${
+                    active ? 'border-primary bg-primary-light font-medium' : 'border-border-strong bg-surface'
+                  }`}
+                >
+                  <input type="radio" value={method} {...register('paymentMethod')} className="accent-primary" />
+                  <span className="truncate">{method === PaymentMethod.Cod ? 'COD' : 'Chuyển khoản'}</span>
+                </label>
+              )
+            })}
           </div>
+        </fieldset>
 
-          <p className="md:col-span-2" data-testid="order-total">
-            Tạm tính: <strong className="text-gold">{formatPrice(unitPrice * quantity)}</strong>
-            <span className="ml-2 text-sm text-sand/60">(giá cuối do hệ thống xác nhận)</span>
+        {paymentMethod === PaymentMethod.BankTransfer && bankInfo && (
+          <p className="rounded-lg border border-primary/40 bg-primary-light p-3 text-[14px] sm:col-span-2">
+            Thông tin chuyển khoản: {bankInfo}
+          </p>
+        )}
+
+        <label className="block sm:col-span-2">
+          <span className="mb-1.5 block text-[13px] font-medium">Ghi chú (không bắt buộc)</span>
+          <textarea
+            rows={3}
+            {...register('note')}
+            className="w-full rounded-lg border border-border-strong bg-surface px-3 py-2 placeholder:text-muted"
+          />
+        </label>
+
+        <div className="border-t border-border pt-5 sm:col-span-2">
+          <p className="flex items-baseline justify-between" data-testid="order-total">
+            <span className="text-muted">
+              Tạm tính · {quantity} cuốn × {formatPrice(unitPrice)}
+            </span>
+            <strong className="text-2xl text-primary">{formatPrice(unitPrice * quantity)}</strong>
+          </p>
+          <p className="mt-1 text-[13px] text-muted">Giá cuối do hệ thống xác nhận khi tạo đơn.</p>
+
+          <Button type="submit" size="lg" className="mt-5 w-full sm:w-auto" disabled={mutation.isPending}>
+            {mutation.isPending ? 'Đang gửi...' : 'Xác nhận đặt hàng'}
+          </Button>
+
+          <p className="mt-3 text-[13px] text-muted">
+            Gọi xác nhận trước khi giao · Kiểm hàng rồi mới trả tiền
           </p>
 
-          <button
-            type="submit"
-            disabled={mutation.isPending}
-            className="rounded-full bg-gold px-8 py-3 font-semibold text-ink disabled:opacity-60 md:col-span-2"
-          >
-            {mutation.isPending ? 'Đang gửi...' : 'Xác nhận đặt hàng'}
-          </button>
-
-          {error && <p className="text-sm text-red-400 md:col-span-2" role="alert">{error}</p>}
-        </form>
-      </div>
+          {error && <p className="mt-3 text-[14px] text-danger" role="alert">{error}</p>}
+        </div>
+      </form>
     </section>
   )
 }
