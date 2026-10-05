@@ -338,7 +338,7 @@ FROM AppUsers u JOIN Roles r ON r.Id = u.RoleId;
 *Mở terminal, dán lệnh này.*
 
 ```bash
-curl -X POST http://localhost:8080/api/orders -H "Content-Type: application/json" -d "{\"customerName\":\"Thu Gian Lan\",\"phone\":\"0905000111\",\"address\":\"1 Duong Test, Quan 1, TPHCM\",\"quantity\":3,\"paymentMethod\":0,\"totalPrice\":1,\"unitPrice\":1}"
+curl -X POST http://localhost:5173/api/orders -H "Content-Type: application/json" -d "{\"customerName\":\"Thu Gian Lan\",\"phone\":\"0905000111\",\"address\":\"1 Duong Test, Quan 1, TPHCM\",\"quantity\":3,\"paymentMethod\":0,\"totalPrice\":1,\"unitPrice\":1}"
 ```
 
 > "Bây giờ em chứng minh cái em nói lúc nãy. Em gọi thẳng API, **cố tình gửi kèm tổng tiền
@@ -352,7 +352,7 @@ curl -X POST http://localhost:8080/api/orders -H "Content-Type: application/json
 *Dán lệnh thứ hai.*
 
 ```bash
-curl -i -X POST http://localhost:8080/api/orders -H "Content-Type: application/json" -d "{\"customerName\":\"Test\",\"phone\":\"901234567\",\"address\":\"1 Duong Test, Quan 1, TPHCM\",\"quantity\":1,\"paymentMethod\":0}"
+curl -i -X POST http://localhost:5173/api/orders -H "Content-Type: application/json" -d "{\"customerName\":\"Test\",\"phone\":\"901234567\",\"address\":\"1 Duong Test, Quan 1, TPHCM\",\"quantity\":1,\"paymentMethod\":0}"
 ```
 
 > "Còn đây em gửi số điện thoại sai định dạng, thiếu số 0 đầu. Server trả về **400 Bad Request**
@@ -382,8 +382,10 @@ curl -i -X POST http://localhost:8080/api/orders -H "Content-Type: application/j
 
 | Việc | Lệnh / thao tác |
 |---|---|
-| Bật hệ thống | `docker compose up -d` |
-| Mở log SQL | `docker compose logs -f api` (cửa sổ riêng) |
+| Bật backend | `ASPNETCORE_ENVIRONMENT=Development dotnet run --project backend/NhaGiaKim.Api --urls http://localhost:5080 --no-launch-profile` |
+| Bật frontend | `npm --prefix frontend run dev` → mở **http://localhost:5173** |
+| Xem log SQL | Nhìn thẳng vào cửa sổ terminal đang chạy `dotnet run` — câu SQL hiện ra ngay |
+| Xem database | SSMS → `(localdb)\MSSQLLocalDB` → Windows Authentication (không cần mật khẩu) |
 | Phóng to chữ VS Code | `Ctrl` + `+` vài lần, cỡ 16–18 |
 | Phóng to chữ SSMS | Tools → Options → Fonts and Colors, cỡ 14–16 |
 | Mở sẵn 5 file | `OrderFormSection.tsx` · `OrdersController.cs` · `OrderService.cs` · `AuthService.cs` · `AdminOrderService.cs` |
