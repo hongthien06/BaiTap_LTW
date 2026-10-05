@@ -44,6 +44,9 @@ services:
       Seed__AdminPassword: ${SEED_ADMIN_PASSWORD:?Thieu SEED_ADMIN_PASSWORD}
       # Bat Swagger de cham bai / demo. Trien khai that thi dat false.
       Swagger__Enabled: ${SWAGGER_ENABLED:-true}
+      # Dat Information de THAY CAU SQL that ma EF Core sinh ra (dung khi quay video demo).
+      # Mac dinh Warning cho log khoi ngap.
+      Serilog__MinimumLevel__Override__Microsoft.EntityFrameworkCore.Database.Command: ${SQL_LOG_LEVEL:-Warning}
       # Frontend va API dung chung origin qua nginx nen khong can CORS,
       # van khai bao phong truong hop goi API truc tiep o cong 5080.
       Cors__AllowedOrigins__0: ${FRONTEND_ORIGIN:-http://localhost:8080}

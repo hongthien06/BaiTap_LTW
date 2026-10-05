@@ -103,6 +103,7 @@ vì test tích hợp dùng SQLite nên không đại diện được cho SQL Ser
 | [docs/04-work-packages.md](docs/04-work-packages.md) | Chia work package, DAG, ownership file, chống xung đột | P1–P2 |
 | [docs/05-review-findings.md](docs/05-review-findings.md) | Findings của reviewer độc lập và cách xử lý từng cái | Bước 7–8 |
 | [docs/06-docker.md](docs/06-docker.md) | Đóng gói Docker: kiến trúc, secret, lệnh hay dùng, giới hạn | Triển khai |
+| [docs/07-kich-ban-video.md](docs/07-kich-ban-video.md) | Kịch bản quay video demo luồng dữ liệu, bám tới từng dòng code | Nộp bài |
 | [docs/evidence/](docs/evidence/) | Raw output kiểm chứng | Bước 9 |
 | [contracts/README.md](contracts/README.md) | Contract API đã đóng băng (`openapi.json`) | P2 |
 
