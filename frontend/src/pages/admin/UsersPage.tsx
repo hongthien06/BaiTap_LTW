@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { getErrorMessage } from '../../api/client'
 import { adminApi } from '../../api/endpoints'
 import type { AdminUser, CreateUserRequest, UpdateUserRequest } from '../../api/types'
+import { AdminCard, AdminPageHeader } from '../../components/admin/AdminPage'
 import { formatDateTime } from '../../lib/format'
 import { useAuth } from '../../hooks/useAuth'
 
@@ -79,15 +80,19 @@ export function UsersPage() {
   return (
     <>
       {contextHolder}
-      <h1 className="mb-4 text-xl font-semibold">Tài khoản quản trị</h1>
+      <AdminPageHeader
+        title="Tài khoản quản trị"
+        description="Admin toàn quyền. Staff chỉ xem đơn và duyệt đánh giá."
+        actions={<Button type="primary" onClick={openCreate}>Thêm tài khoản</Button>}
+      />
 
-      <Button type="primary" className="mb-4" onClick={openCreate}>Thêm tài khoản</Button>
-
+      <AdminCard className="mt-4" flush>
       <Table<AdminUser>
         rowKey="id"
         loading={isFetching}
         dataSource={data ?? []}
         pagination={false}
+        scroll={{ x: 720 }}
         columns={[
           { title: 'Email', dataIndex: 'email', key: 'email' },
           { title: 'Họ tên', dataIndex: 'fullName', key: 'fullName' },
@@ -127,6 +132,7 @@ export function UsersPage() {
           },
         ]}
       />
+      </AdminCard>
 
       <Modal
         open={editing !== null}

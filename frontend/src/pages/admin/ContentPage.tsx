@@ -4,12 +4,17 @@ import { useEffect, useState } from 'react'
 import { getErrorMessage } from '../../api/client'
 import { adminApi } from '../../api/endpoints'
 import type { AdminPressQuote, PressQuoteRequest, UpdateAuthorRequest, UpdateReviewRequest } from '../../api/types'
+import { AdminCard, AdminPageHeader } from '../../components/admin/AdminPage'
 import { UploadField } from '../../components/admin/UploadField'
 
 export function ContentPage() {
   return (
     <>
-      <h1 className="mb-4 text-xl font-semibold">Nội dung landing page</h1>
+      <AdminPageHeader
+        title="Nội dung landing page"
+        description="Tác giả, trích dẫn báo chí và bài review hiện trên trang bán hàng."
+      />
+      <AdminCard className="mt-4">
       <Tabs
         items={[
           { key: 'author', label: 'Tác giả', children: <AuthorTab /> },
@@ -17,6 +22,7 @@ export function ContentPage() {
           { key: 'review', label: 'Review nội dung', children: <ReviewTab /> },
         ]}
       />
+      </AdminCard>
     </>
   )
 }
@@ -132,6 +138,7 @@ function PressTab() {
         loading={isFetching}
         dataSource={data ?? []}
         pagination={false}
+        scroll={{ x: 640 }}
         columns={[
           { title: 'Thứ tự', dataIndex: 'sortOrder', key: 'sortOrder', width: 80 },
           { title: 'Tên báo', dataIndex: 'pressName', key: 'pressName' },
