@@ -1,11 +1,14 @@
 # Stack chay o MAY CA NHAN. Moi cong deu gan vao 127.0.0.1 nen khong lo ra mang LAN:
 # may khac trong cung wifi khong truy cap duoc. Muon demo cho may khac thi bo "127.0.0.1:".
+#
+# KHONG dat container_name co dinh: dat thi hai ban sao cua du an khong the chay cung luc
+# (Docker bao "container name already in use"), va ai da co container trung ten se gap
+# loi kho hieu ngay lenh dau tien. De Docker tu dat ten theo <project>-<service>-1.
 name: nhagiakim
 
 services:
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: ngk-sqlserver
     environment:
       ACCEPT_EULA: "Y"
       MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?Thieu MSSQL_SA_PASSWORD - copy .env.example thanh .env}
@@ -26,7 +29,6 @@ services:
     build:
       context: .
       dockerfile: backend/Dockerfile
-    container_name: ngk-api
     depends_on:
       sqlserver:
         condition: service_healthy
@@ -60,7 +62,6 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: ngk-frontend
     depends_on:
       api:
         condition: service_healthy

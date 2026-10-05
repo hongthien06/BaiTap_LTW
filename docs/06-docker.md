@@ -147,7 +147,7 @@ phục vụ bản build tĩnh của React. Kiểm tra:
 
 ```bash
 docker compose ps
-docker exec ngk-frontend ls /usr/share/nginx/html
+docker compose exec frontend ls /usr/share/nginx/html
 #   assets/  img/  favicon.svg  icons.svg  index.html  50x.html
 ```
 
@@ -181,6 +181,9 @@ docker compose ps
   sqlserver   Up (healthy)            127.0.0.1:1433->1433/tcp
   api         Up (healthy)            127.0.0.1:5080->8080/tcp
   frontend    Up (healthy)            127.0.0.1:8080->80/tcp
+
+Chạy thử từ một bản clone mới trên cổng khác (8081/5081/1434): build và khởi động được,
+3 container healthy, landing và admin đều 200.
 
 Qua nginx cổng 8080
   /                        -> HTTP 200
